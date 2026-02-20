@@ -168,8 +168,9 @@ def run_scoring_job():
         # 1. Ottieni i risultati della gara più recente da Ergast
         race_data = get_latest_race()
         if not race_data:
-            print("❌ Job abortito: nessun dato di gara disponibile")
-            return
+            message ="❌ Job abortito: nessun dato di gara disponibile"
+            print(message)
+            return message
         
         # 2. Trova il GP corrispondente nel nostro DB
         # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
@@ -180,15 +181,19 @@ def run_scoring_job():
         ).first()
         
         if not gp:
-            print(f"❌ Nessun GP trovato per la data {race_date_str}")
-            return
+            message =f"❌ Nessun GP trovato per la data {race_date_str}"
+            print(message)
+            return message
         
-        print(f"🎯 Matched GP: {gp.name} (ID {gp.id})")
+        match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
+        print(match_message)
         
         # 3. Processa i risultati e calcola i punteggi
         process_race_results(race_data, gp.id)
         
-        print(f"\n✅ Job completato alle {datetime.now().isoformat()}\n")
+        message = "✅ Job completato con successo"
+        print(message)
+        return message + ". " + match_message
 
 if __name__ == '__main__':
     run_scoring_job()
