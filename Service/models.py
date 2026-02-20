@@ -68,6 +68,46 @@ class GrandPrix(db.Model):
         else:
             return 'future'
 
+class Driver(db.Model):
+    __tablename__ = 'drivers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    number = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    team = db.Column(db.String(120), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    points = db.Column(db.Integer, default=0)
+    color = db.Column(db.String(7), nullable=False)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'num': self.number,
+            'name': self.name,
+            'team': self.team,
+            'price': self.price,
+            'pts': self.points,
+            'color': self.color
+        }
+
+class Constructor(db.Model):
+    __tablename__ = 'constructors'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False, unique=True)
+    price = db.Column(db.Float, nullable=False)
+    points = db.Column(db.Integer, default=0)
+    color = db.Column(db.String(7), nullable=False)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'pts': self.points,
+            'color': self.color
+        }
+
 class Team(db.Model):
     __tablename__ = 'teams'
     

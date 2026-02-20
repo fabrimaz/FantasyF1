@@ -1,10 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState
-import os
-import sys
+from Service.schedule.scoring_job import run_scoring_job
+from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
-#from schedule.scoring_job import run_scoring_job
 
 app = Flask(__name__)
 
@@ -95,6 +93,66 @@ with app.app_context():
             lock_date=gp_data['lock_date']
         )
         db.session.add(gp)
+    db.session.commit()
+    
+    # Seed Drivers (griglia 2026)
+    Driver.query.delete()
+    drivers_data = [
+        {'num':3,  'name':'Max Verstappen',     'team':'Red Bull Racing',  'price':25.0, 'pts':0, 'color':'#0600FF'},
+        {'num':6,  'name':'Isack Hadjar',       'team':'Red Bull Racing',  'price':9.0,  'pts':0, 'color':'#0600FF'},
+        {'num':1,  'name':'Lando Norris',       'team':'McLaren',          'price':23.0, 'pts':0, 'color':'#FF8700'},
+        {'num':81, 'name':'Oscar Piastri',      'team':'McLaren',          'price':22.0, 'pts':0, 'color':'#FF8700'},
+        {'num':16, 'name':'Charles Leclerc',    'team':'Ferrari',          'price':24.0, 'pts':0, 'color':'#DC0000'},
+        {'num':44, 'name':'Lewis Hamilton',     'team':'Ferrari',          'price':24.0, 'pts':0, 'color':'#DC0000'},
+        {'num':12, 'name':'Kimi Antonelli',     'team':'Mercedes',         'price':15.0, 'pts':0, 'color':'#00D2BE'},
+        {'num':63, 'name':'George Russell',     'team':'Mercedes',         'price':20.0, 'pts':0, 'color':'#00D2BE'},
+        {'num':14, 'name':'Fernando Alonso',    'team':'Aston Martin',     'price':21.0, 'pts':0, 'color':'#006341'},
+        {'num':18, 'name':'Lance Stroll',       'team':'Aston Martin',     'price':18.0, 'pts':0, 'color':'#006341'},
+        {'num':23, 'name':'Alexander Albon',    'team':'Williams',         'price':17.0, 'pts':0, 'color':'#003262'},
+        {'num':55, 'name':'Carlos Sainz Jr.',   'team':'Williams',         'price':21.0, 'pts':0, 'color':'#003262'},
+        {'num':5,  'name':'Gabriel Bortoleto',  'team':'Audi',             'price':16.0, 'pts':0, 'color':'#E5001B'},
+        {'num':27, 'name':'Nico Hülkenberg',    'team':'Audi',             'price':19.0, 'pts':0, 'color':'#E5001B'},
+        {'num':11, 'name':'Sergio Pérez',       'team':'Cadillac',         'price':18.0, 'pts':0, 'color':'#003478'},
+        {'num':77, 'name':'Valtteri Bottas',    'team':'Cadillac',         'price':13.0, 'pts':0, 'color':'#003478'},
+        {'num':31, 'name':'Esteban Ocon',       'team':'Haas',             'price':12.0, 'pts':0, 'color':'#C8102E'},
+        {'num':87, 'name':'Oliver Bearman',     'team':'Haas',             'price':14.0, 'pts':0, 'color':'#C8102E'},
+        {'num':10, 'name':'Pierre Gasly',       'team':'Alpine',           'price':13.0, 'pts':0, 'color':'#0082FA'},
+        {'num':43, 'name':'Franco Colapinto',   'team':'Alpine',           'price':14.0, 'pts':0, 'color':'#0082FA'},
+    ]
+    for driver_data in drivers_data:
+        driver = Driver(
+            number=driver_data['num'],
+            name=driver_data['name'],
+            team=driver_data['team'],
+            price=driver_data['price'],
+            points=driver_data['pts'],
+            color=driver_data['color']
+        )
+        db.session.add(driver)
+    db.session.commit()
+    
+    # Seed Constructors (griglia 2026)
+    Constructor.query.delete()
+    constructors_data = [
+        {'name':'Red Bull Racing',  'price':34.0, 'pts':0, 'color':'#0600FF'},
+        {'name':'McLaren',          'price':45.0, 'pts':0, 'color':'#FF8700'},
+        {'name':'Ferrari',          'price':48.0, 'pts':0, 'color':'#DC0000'},
+        {'name':'Mercedes',         'price':35.0, 'pts':0, 'color':'#00D2BE'},
+        {'name':'Aston Martin',     'price':39.0, 'pts':0, 'color':'#006341'},
+        {'name':'Williams',         'price':38.0, 'pts':0, 'color':'#003262'},
+        {'name':'Audi',             'price':35.0, 'pts':0, 'color':'#E5001B'},
+        {'name':'Cadillac',         'price':31.0, 'pts':0, 'color':'#003478'},
+        {'name':'Haas',             'price':26.0, 'pts':0, 'color':'#C8102E'},
+        {'name':'Alpine',           'price':27.0, 'pts':0, 'color':'#0082FA'},
+    ]
+    for constructor_data in constructors_data:
+        constructor = Constructor(
+            name=constructor_data['name'],
+            price=constructor_data['price'],
+            points=constructor_data['pts'],
+            color=constructor_data['color']
+        )
+        db.session.add(constructor)
     db.session.commit()
 
 # ============ AUTH ENDPOINTS ============
@@ -346,7 +404,7 @@ def save_team_result(team_id, gp_id):
 @app.route('/api/weekendPoints', methods=['GET'])
 def get_weekend_points():
     result = 100
-    #result = run_scoring_job()
+    result = run_scoring_job()
 
     return jsonify({
         'success': True,
@@ -357,45 +415,13 @@ def get_weekend_points():
 
 @app.route('/api/drivers', methods=['GET'])
 def get_drivers():
-    drivers = [
-        {'id':1,  'num':1,  'name':'Max Verstappen',  'team':'Red Bull',     'price':32.5, 'pts':575, 'color':'#3671C6'},
-        {'id':2,  'num':11, 'name':'Sergio Perez',    'team':'Red Bull',     'price':22.0, 'pts':285, 'color':'#3671C6'},
-        {'id':3,  'num':44, 'name':'Lewis Hamilton',  'team':'Mercedes',     'price':26.0, 'pts':234, 'color':'#27F4D2'},
-        {'id':4,  'num':63, 'name':'George Russell',  'team':'Mercedes',     'price':20.5, 'pts':228, 'color':'#27F4D2'},
-        {'id':5,  'num':16, 'name':'Charles Leclerc', 'team':'Ferrari',      'price':25.0, 'pts':306, 'color':'#E8002D'},
-        {'id':6,  'num':55, 'name':'Carlos Sainz',    'team':'Ferrari',      'price':21.0, 'pts':290, 'color':'#E8002D'},
-        {'id':7,  'num':4,  'name':'Lando Norris',    'team':'McLaren',      'price':24.0, 'pts':374, 'color':'#FF8000'},
-        {'id':8,  'num':81, 'name':'Oscar Piastri',   'team':'McLaren',      'price':18.5, 'pts':292, 'color':'#FF8000'},
-        {'id':9,  'num':14, 'name':'Fernando Alonso', 'team':'Aston Martin', 'price':17.0, 'pts':206, 'color':'#358C75'},
-        {'id':10, 'num':18, 'name':'Lance Stroll',    'team':'Aston Martin', 'price':10.0, 'pts':74,  'color':'#358C75'},
-        {'id':11, 'num':10, 'name':'Pierre Gasly',    'team':'Alpine',       'price':10.5, 'pts':62,  'color':'#0093CC'},
-        {'id':12, 'num':31, 'name':'Esteban Ocon',    'team':'Alpine',       'price':9.5,  'pts':58,  'color':'#0093CC'},
-        {'id':13, 'num':23, 'name':'Alex Albon',      'team':'Williams',     'price':9.0,  'pts':42,  'color':'#64C4FF'},
-        {'id':14, 'num':22, 'name':'Yuki Tsunoda',    'team':'RB',           'price':9.5,  'pts':22,  'color':'#6692FF'},
-        {'id':15, 'num':27, 'name':'Nico Hulkenberg', 'team':'Haas',         'price':9.0,  'pts':31,  'color':'#B6BABD'},
-        {'id':16, 'num':3,  'name':'Daniel Ricciardo','team':'RB',           'price':9.0,  'pts':12,  'color':'#6692FF'},
-        {'id':17, 'num':77, 'name':'Valtteri Bottas', 'team':'Sauber',       'price':8.0,  'pts':10,  'color':'#52E252'},
-        {'id':18, 'num':24, 'name':'Guanyu Zhou',     'team':'Sauber',       'price':7.5,  'pts':6,   'color':'#52E252'},
-        {'id':19, 'num':20, 'name':'Kevin Magnussen', 'team':'Haas',         'price':7.5,  'pts':16,  'color':'#B6BABD'},
-        {'id':20, 'num':2,  'name':'Logan Sargeant',  'team':'Williams',     'price':7.0,  'pts':1,   'color':'#64C4FF'},
-    ]
-    return jsonify(drivers), 200
+    drivers = Driver.query.all()
+    return jsonify([driver.to_dict() for driver in drivers]), 200
 
 @app.route('/api/constructors', methods=['GET'])
 def get_constructors():
-    constructors = [
-        {'id':1, 'name':'Red Bull Racing', 'price':28.0, 'pts':860, 'color':'#3671C6'},
-        {'id':2, 'name':'Ferrari',         'price':23.0, 'pts':596, 'color':'#E8002D'},
-        {'id':3, 'name':'McLaren',         'price':22.0, 'pts':666, 'color':'#FF8000'},
-        {'id':4, 'name':'Mercedes',        'price':20.0, 'pts':462, 'color':'#27F4D2'},
-        {'id':5, 'name':'Aston Martin',    'price':14.0, 'pts':280, 'color':'#358C75'},
-        {'id':6, 'name':'Alpine',          'price':9.0,  'pts':120, 'color':'#0093CC'},
-        {'id':7, 'name':'Williams',        'price':8.0,  'pts':43,  'color':'#64C4FF'},
-        {'id':8, 'name':'RB',              'price':8.5,  'pts':34,  'color':'#6692FF'},
-        {'id':9, 'name':'Haas',            'price':7.5,  'pts':47,  'color':'#B6BABD'},
-        {'id':10,'name':'Kick Sauber',     'price':7.0,  'pts':16,  'color':'#52E252'},
-    ]
-    return jsonify(constructors), 200
+    constructors = Constructor.query.all()
+    return jsonify([constructor.to_dict() for constructor in constructors]), 200
 
 # ============ ADMIN ENDPOINTS ============
 
