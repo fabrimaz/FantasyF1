@@ -113,9 +113,9 @@ with app.app_context():
         {'num':11, 'name':'Sergio Pérez',       'team':'Cadillac',         'price':18.0, 'pts':0, 'color':'#003478'},
         {'num':77, 'name':'Valtteri Bottas',    'team':'Cadillac',         'price':13.0, 'pts':0, 'color':'#003478'},
         {'num':31, 'name':'Esteban Ocon',       'team':'Haas',             'price':12.0, 'pts':0, 'color':'#C8102E'},
-        {'num':87, 'name':'Oliver Bearman',     'team':'Haas',             'price':14.0, 'pts':0, 'color':'#C8102E'},
-        {'num':10, 'name':'Pierre Gasly',       'team':'Alpine',           'price':13.0, 'pts':0, 'color':'#0082FA'},
-        {'num':43, 'name':'Franco Colapinto',   'team':'Alpine',           'price':14.0, 'pts':0, 'color':'#0082FA'},
+        {'num':87, 'name':'Oliver Bearman',     'team':'Haas',             'price':8.0, 'pts':0, 'color':'#C8102E'},
+        {'num':10, 'name':'Pierre Gasly',       'team':'Alpine',           'price':5.0, 'pts':0, 'color':'#0082FA'},
+        {'num':43, 'name':'Franco Colapinto',   'team':'Alpine',           'price':5.0, 'pts':0, 'color':'#0082FA'},
     ]
     for driver_data in drivers_data:
         driver = Driver(
