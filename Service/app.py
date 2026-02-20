@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 app = Flask(__name__)
 
@@ -198,6 +200,17 @@ def register():
         'success': True,
         'user': user.to_dict()
     }), 201
+
+
+# def send_login_email(to_email, username):
+#     message = Mail(
+#         from_email='tuaemail@gmail.com',  # quella con cui ti sei registrato su SendGrid
+#         to_emails=to_email,
+#         subject='Nuovo accesso a FantasyF1',
+#         html_content=f'<p>Ciao {username}, hai effettuato un accesso.</p>'
+#     )
+#     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+#     sg.send(message)
 
 # ============ GRAND PRIX ENDPOINTS ============
 
