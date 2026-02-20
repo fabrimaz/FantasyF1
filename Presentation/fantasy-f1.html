@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy F1 — Pole Position</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav id="nav" style="display:none">
+  <div class="nav-logo">FANTASY <span>F1</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('team')">Team</button>
+    <button class="nav-tab" onclick="goTo('leagues')">Leghe</button>
+  </div>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-username"></span>
+    <button class="btn-logout" onclick="logout()">Esci</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════════════════════  
+     LOGIN SCREEN
+     ════════════════════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <main>
+    <div class="login-box">
+      <div class="login-hero">
+        <div class="login-stripes">
+          <div class="login-stripe" style="width:50px;background:var(--red)"></div>
+          <div class="login-stripe" style="width:24px;background:var(--gold)"></div>
+          <div class="login-stripe" style="width:14px;background:#27F4D2"></div>
+        </div>
+        <div class="login-logo">FANTASY <span>F1</span></div>
+        <div class="login-tagline">Pole Position · Season 2024</div>
+      </div>
+      <div class="card login-card">
+        <div class="login-tabs">
+          <button class="login-tab active" id="tab-login" onclick="switchMode('login')">Accedi</button>
+          <button class="login-tab" id="tab-register" onclick="switchMode('register')">Registrati</button>
+        </div>
+        <div id="login-error" class="login-error" style="display:none"></div>
+        <div id="field-username" class="form-group" style="display:none">
+          <label class="form-label">Username</label>
+          <input class="form-input" id="inp-username" placeholder="il_tuo_nickname" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="inp-email" type="email" placeholder="tu@example.com" value="demo@f1.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="inp-password" type="password" placeholder="••••••••" value="demo123"
+            onkeydown="if(event.key==='Enter') doAuth()" />
+        </div>
+        <button class="btn btn-primary btn-full" id="auth-btn" onclick="doAuth()">→ Entra in pista</button>
+        <div class="login-hint">Demo: demo@f1.com · demo123</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- TEAM BUILDER -->
+<div class="screen" id="screen-team">
+  <main>
+    <div class="page-title">Costruisci il <span>Team</span></div>
+    <div class="page-sub">Seleziona 5 piloti e 2 scuderie · Budget $100M</div>
+    <div class="card budget-bar">
+      <div>
+        <div class="budget-label">Budget rimasto</div>
+        <div class="budget-num" id="budget-left">$100.0M</div>
+      </div>
+      <div class="budget-track"><div class="budget-fill" id="budget-fill" style="width:100%"></div></div>
+      <div style="text-align:right">
+        <div class="budget-label">Speso</div>
+        <div style="font-size:18px;font-weight:900;color:var(--muted)" id="budget-spent">$0.0M</div>
+      </div>
+    </div>
+    <div class="tb-layout">
+      <div>
+        <div class="section-label">Piloti <span id="driver-count" style="color:var(--text)">0/5</span></div>
+        <div class="drivers-grid" id="drivers-grid"></div>
+        <div class="section-label">Scuderie <span id="constr-count" style="color:var(--text)">0/2</span></div>
+        <div class="constructors-grid" id="constructors-grid"></div>
+      </div>
+      <div class="my-team">
+        <div class="card">
+          <div class="my-team-title">Il Mio Team</div>
+          <div class="my-team-sub" id="team-status">Seleziona piloti e scuderie</div>
+          <div class="section-label" style="margin-bottom:10px">Piloti</div>
+          <div id="driver-slots"></div>
+          <div class="section-label" style="margin-top:14px;margin-bottom:10px">Scuderie</div>
+          <div id="constr-slots"></div>
+          <button class="btn btn-primary btn-full" style="margin-top:16px"
+            id="save-btn" onclick="saveTeam()" disabled>Salva Team →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- LEAGUES -->
+<div class="screen" id="screen-leagues">
+  <main>
+    <div class="page-title">Leghe & <span>Classifiche</span></div>
+    <div class="page-sub">Entra in una lega con il codice o seleziona la tua</div>
+    <div class="league-layout">
+      <div>
+        <div class="card join-card">
+          <div class="join-title">Entra in una Lega</div>
+          <div class="form-group" style="margin-bottom:12px">
+            <label class="form-label">Codice Lega</label>
+            <input class="form-input" id="inp-code" placeholder="es. POLE24"
+              style="text-transform:uppercase;letter-spacing:3px"
+              oninput="this.value=this.value.toUpperCase()"
+              onkeydown="if(event.key==='Enter') joinLeague()" />
+          </div>
+          <button class="btn btn-primary btn-full" onclick="joinLeague()">→ Unisciti</button>
+          <div class="hint-codes">Prova: FERRARI · AMICI01</div>
+        </div>
+        <div class="section-label">Le Mie Leghe</div>
+        <div id="my-leagues-list"></div>
+      </div>
+      <div>
+        <div class="lb-top">
+          <div>
+            <div class="lb-title" id="lb-name">—</div>
+            <div class="lb-round" id="lb-round">—</div>
+          </div>
+          <span class="badge badge-red" id="lb-members">—</span>
+        </div>
+        <div class="podium" id="podium"></div>
+        <div class="card" style="overflow:hidden">
+          <table class="lb-table">
+            <thead><tr><th>#</th><th>Manager</th><th>Punti</th><th>Δ</th></tr></thead>
+            <tbody id="lb-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
