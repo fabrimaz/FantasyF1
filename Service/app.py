@@ -372,15 +372,23 @@ def get_gp_results(league_id, gp_id):
     member_ids = [m.user_id for m in memberships]
     
     # Get team results for this GP from league members
-    results = TeamResult.query.filter(
+    teamResults = TeamResult.query.filter(
         TeamResult.gp_id == gp_id,
         TeamResult.user_id.in_(member_ids)
     ).order_by(TeamResult.points.desc()).all()
+
+    remaining_members = set(member_ids) - set([tr.user_id for tr in teamResults])
+    for mid in remaining_members:
+        d = dict()
+        d['user_id'] = mid
+        d['points'] = 0
+        d['team'] = next((m.team_name for m in memberships if m.user_id == mid), None)
+        teamResults.append(d)
     
     return jsonify({
         'league': league.to_dict(),
         'gp': gp.to_dict(),
-        'results': [r.to_dict() for r in results]
+        'results': [r for r in teamResults]
     }), 200
 
 @app.route('/api/teamresult/<int:team_id>/<int:gp_id>', methods=['POST'])
