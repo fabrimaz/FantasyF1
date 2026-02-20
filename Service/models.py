@@ -27,11 +27,48 @@ class User(db.Model):
             'email': self.email
         }
 
+class GrandPrix(db.Model):
+    __tablename__ = 'grand_prix'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    round_num = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    circuit = db.Column(db.String(120), nullable=False)
+    fp1_start = db.Column(db.DateTime, nullable=True)
+    lock_date = db.Column(db.DateTime, nullable=True)
+    teams = db.relationship('Team', backref='grand_prix', lazy=True, cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'round': self.round_num,
+            'name': self.name,
+            'date': self.date.isoformat(),
+            'circuit': self.circuit,
+            'fp1_start': self.fp1_start.isoformat() if self.fp1_start else None,
+            'lock_date': self.lock_date.isoformat() if self.lock_date else None,
+            'status': self.get_status()
+        }
+    
+    def get_status(self):
+        from datetime import datetime
+        today = datetime.utcnow().date()
+        gp_date = self.date.date() if hasattr(self.date, 'date') else self.date
+        
+        if today > gp_date:
+            return 'past'
+        elif today == gp_date:
+            return 'current'
+        else:
+            return 'future'
+
 class Team(db.Model):
     __tablename__ = 'teams'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    gp_id = db.Column(db.Integer, db.ForeignKey('grand_prix.id'), nullable=False)
     drivers_json = db.Column(db.Text, nullable=False, default='[]')
     constructors_json = db.Column(db.Text, nullable=False, default='[]')
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -49,10 +86,16 @@ class Team(db.Model):
         return json.loads(self.constructors_json)
     
     def to_dict(self):
+        from datetime import datetime
+        now = datetime.utcnow()
+        # Team can be edited if we haven't reached the lock_date yet
+        can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > now
         return {
             'id': self.id,
+            'gp_id': self.gp_id,
             'drivers': self.get_drivers(),
             'constructors': self.get_constructors(),
+            'can_edit': can_edit,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
@@ -94,4 +137,27 @@ class LeagueMembership(db.Model):
             'pts': self.points,
             'ch': self.change,
             'me': False
+        }
+class TeamResult(db.Model):
+    __tablename__ = 'team_results'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    gp_id = db.Column(db.Integer, db.ForeignKey('grand_prix.id'), nullable=False)
+    points = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    team = db.relationship('Team', backref='results')
+    user = db.relationship('User', backref='team_results')
+    grand_prix = db.relationship('GrandPrix', backref='team_results')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'team_id': self.team_id,
+            'user_id': self.user_id,
+            'gp_id': self.gp_id,
+            'points': self.points,
+            'username': self.user.username
         }

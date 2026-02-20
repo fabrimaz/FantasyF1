@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from models import db, User, Team, League, LeagueMembership
+from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult
 import os
-from datetime import datetime
+import sys
+from datetime import datetime, timedelta
+from schedule.scoring_job import run_scoring_job
 
 app = Flask(__name__)
 
@@ -41,6 +43,45 @@ with app.app_context():
                 current_round=league_data['round']
             )
             db.session.add(league)
+    db.session.commit()
+    
+    # Seed Grand Prix (2026 F1 season)
+    # Clear existing GP data
+    GrandPrix.query.delete()
+    
+    gps = [
+        # Note: Sprint races are at Australia, China, USA, Brazil in 2026 (lock after Fri qualifying)
+        # Regular weeks: lock after Sat qualifying
+        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
+        {'round': 2, 'name': 'Saudi Arabia', 'circuit': 'Jeddah Corniche Circuit', 'date': datetime(2026, 3, 8), 'fp1_start': datetime(2026, 3, 6, 10, 0), 'lock_date': datetime(2026, 3, 7, 17, 0)},
+        {'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint: lock after Fri Q
+        {'round': 4, 'name': 'China', 'circuit': 'Shanghai International Circuit', 'date': datetime(2026, 4, 5), 'fp1_start': datetime(2026, 4, 3, 9, 0), 'lock_date': datetime(2026, 4, 3, 18, 0)},  # Sprint
+        {'round': 5, 'name': 'Japan', 'circuit': 'Suzuka International Racing Course', 'date': datetime(2026, 4, 19), 'fp1_start': datetime(2026, 4, 17, 10, 0), 'lock_date': datetime(2026, 4, 18, 17, 0)},
+        {'round': 6, 'name': 'Monaco', 'circuit': 'Circuit de Monaco', 'date': datetime(2026, 5, 24), 'fp1_start': datetime(2026, 5, 22, 11, 0), 'lock_date': datetime(2026, 5, 23, 17, 0)},
+        {'round': 7, 'name': 'Canada', 'circuit': 'Circuit Gilles Villeneuve', 'date': datetime(2026, 6, 7), 'fp1_start': datetime(2026, 6, 5, 13, 0), 'lock_date': datetime(2026, 6, 6, 17, 0)},
+        {'round': 8, 'name': 'Spain', 'circuit': 'Circuit de Barcelona-Catalunya', 'date': datetime(2026, 6, 21), 'fp1_start': datetime(2026, 6, 19, 10, 0), 'lock_date': datetime(2026, 6, 20, 17, 0)},
+        {'round': 9, 'name': 'Austria', 'circuit': 'Red Bull Ring', 'date': datetime(2026, 7, 5), 'fp1_start': datetime(2026, 7, 3, 10, 0), 'lock_date': datetime(2026, 7, 4, 17, 0)},
+        {'round': 10, 'name': 'Britain', 'circuit': 'Silverstone Circuit', 'date': datetime(2026, 7, 19), 'fp1_start': datetime(2026, 7, 17, 10, 0), 'lock_date': datetime(2026, 7, 18, 17, 0)},
+        {'round': 11, 'name': 'Belgium', 'circuit': 'Circuit de Spa-Francorchamps', 'date': datetime(2026, 8, 2), 'fp1_start': datetime(2026, 7, 31, 10, 0), 'lock_date': datetime(2026, 8, 1, 17, 0)},
+        {'round': 12, 'name': 'Netherlands', 'circuit': 'Zandvoort Circuit', 'date': datetime(2026, 8, 30), 'fp1_start': datetime(2026, 8, 28, 11, 0), 'lock_date': datetime(2026, 8, 29, 17, 0)},
+        {'round': 13, 'name': 'Italy', 'circuit': 'Autodromo Nazionale di Monza', 'date': datetime(2026, 9, 6), 'fp1_start': datetime(2026, 9, 4, 10, 0), 'lock_date': datetime(2026, 9, 5, 17, 0)},
+        {'round': 14, 'name': 'Azerbaijan', 'circuit': 'Baku City Circuit', 'date': datetime(2026, 9, 20), 'fp1_start': datetime(2026, 9, 18, 9, 0), 'lock_date': datetime(2026, 9, 19, 17, 0)},
+        {'round': 15, 'name': 'Singapore', 'circuit': 'Marina Bay Street Circuit', 'date': datetime(2026, 10, 4), 'fp1_start': datetime(2026, 10, 2, 10, 0), 'lock_date': datetime(2026, 10, 3, 17, 0)},
+        {'round': 16, 'name': 'USA', 'circuit': 'Circuit of the Americas', 'date': datetime(2026, 10, 18), 'fp1_start': datetime(2026, 10, 16, 12, 0), 'lock_date': datetime(2026, 10, 16, 18, 0)},  # Sprint
+        {'round': 17, 'name': 'Mexico', 'circuit': 'Autódromo Hermanos Rodríguez', 'date': datetime(2026, 10, 25), 'fp1_start': datetime(2026, 10, 23, 11, 0), 'lock_date': datetime(2026, 10, 24, 17, 0)},
+        {'round': 18, 'name': 'Brazil', 'circuit': 'Autódromo José Carlos Pace', 'date': datetime(2026, 11, 1), 'fp1_start': datetime(2026, 10, 30, 12, 0), 'lock_date': datetime(2026, 10, 30, 18, 0)},  # Sprint
+        {'round': 19, 'name': 'Abu Dhabi', 'circuit': 'Yas Marina Circuit', 'date': datetime(2026, 11, 29), 'fp1_start': datetime(2026, 11, 27, 8, 0), 'lock_date': datetime(2026, 11, 28, 17, 0)},
+    ]
+    for gp_data in gps:
+        gp = GrandPrix(
+            round_num=gp_data['round'],
+            name=gp_data['name'],
+            circuit=gp_data['circuit'],
+            date=gp_data['date'],
+            fp1_start=gp_data['fp1_start'],
+            lock_date=gp_data['lock_date']
+        )
+        db.session.add(gp)
     db.session.commit()
 
 # ============ AUTH ENDPOINTS ============
@@ -89,18 +130,43 @@ def register():
         'user': user.to_dict()
     }), 201
 
+# ============ GRAND PRIX ENDPOINTS ============
+
+@app.route('/api/grandprix', methods=['GET'])
+def get_grandprix():
+    gps = GrandPrix.query.order_by(GrandPrix.round_num).all()
+    return jsonify([gp.to_dict() for gp in gps]), 200
+
+@app.route('/api/grandprix/<int:gp_id>', methods=['GET'])
+def get_gp_detail(gp_id):
+    gp = GrandPrix.query.get(gp_id)
+    if not gp:
+        return jsonify({'error': 'Grand Prix non trovato'}), 404
+    return jsonify(gp.to_dict()), 200
+
 # ============ TEAM ENDPOINTS ============
 
-@app.route('/api/team/<int:user_id>', methods=['GET'])
-def get_team(user_id):
-    team = Team.query.filter_by(user_id=user_id).first()
+@app.route('/api/team/<int:user_id>/<int:gp_id>', methods=['GET'])
+def get_team(user_id, gp_id):
+    team = Team.query.filter_by(user_id=user_id, gp_id=gp_id).first()
     if not team:
-        return jsonify({'error': 'Team non trovato'}), 404
+        # Return empty team if it doesn't exist yet
+        gp = GrandPrix.query.get(gp_id)
+        if not gp:
+            return jsonify({'error': 'Grand Prix non trovato'}), 404
+        return jsonify({
+            'id': None,
+            'gp_id': gp_id,
+            'drivers': [],
+            'constructors': [],
+            'can_edit': gp.get_status() == 'current',
+            'created_at': None
+        }), 200
     
     return jsonify(team.to_dict()), 200
 
-@app.route('/api/team/<int:user_id>', methods=['POST'])
-def save_team(user_id):
+@app.route('/api/team/<int:user_id>/<int:gp_id>', methods=['POST'])
+def save_team(user_id, gp_id):
     data = request.get_json()
     drivers = data.get('drivers', [])
     constructors = data.get('constructors', [])
@@ -109,10 +175,18 @@ def save_team(user_id):
     if not user:
         return jsonify({'error': 'Utente non trovato'}), 404
     
+    gp = GrandPrix.query.get(gp_id)
+    if not gp:
+        return jsonify({'error': 'Grand Prix non trovato'}), 404
+    
+    # Check if GP is past (read-only)
+    if gp.get_status() == 'past':
+        return jsonify({'error': 'Non puoi modificare team per GP passati'}), 403
+    
     # Check if team exists
-    team = Team.query.filter_by(user_id=user_id).first()
+    team = Team.query.filter_by(user_id=user_id, gp_id=gp_id).first()
     if not team:
-        team = Team(user_id=user_id)
+        team = Team(user_id=user_id, gp_id=gp_id)
         db.session.add(team)
     
     team.set_drivers(drivers)
@@ -123,6 +197,15 @@ def save_team(user_id):
         'success': True,
         'team': team.to_dict()
     }), 201
+
+@app.route('/api/user/<int:user_id>/teams', methods=['GET'])
+def get_user_teams(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'Utente non trovato'}), 404
+    
+    teams = Team.query.filter_by(user_id=user_id).all()
+    return jsonify([team.to_dict() for team in teams]), 200
 
 # ============ LEAGUE ENDPOINTS ============
 
@@ -190,6 +273,70 @@ def get_leaderboard(league_id):
     return jsonify({
         'league': league.to_dict(),
         'leaderboard': leaderboard
+    }), 200
+
+@app.route('/api/league/<int:league_id>/gp/<int:gp_id>/results', methods=['GET'])
+def get_gp_results(league_id, gp_id):
+    league = League.query.get(league_id)
+    if not league:
+        return jsonify({'error': 'Lega non trovata'}), 404
+    
+    gp = GrandPrix.query.get(gp_id)
+    if not gp:
+        return jsonify({'error': 'Grand Prix non trovato'}), 404
+    
+    # Get all members of the league
+    memberships = LeagueMembership.query.filter_by(league_id=league_id).all()
+    member_ids = [m.user_id for m in memberships]
+    
+    # Get team results for this GP from league members
+    results = TeamResult.query.filter(
+        TeamResult.gp_id == gp_id,
+        TeamResult.user_id.in_(member_ids)
+    ).order_by(TeamResult.points.desc()).all()
+    
+    return jsonify({
+        'league': league.to_dict(),
+        'gp': gp.to_dict(),
+        'results': [r.to_dict() for r in results]
+    }), 200
+
+@app.route('/api/teamresult/<int:team_id>/<int:gp_id>', methods=['POST'])
+def save_team_result(team_id, gp_id):
+    data = request.get_json()
+    points = data.get('points', 0)
+    
+    gp = GrandPrix.query.get(gp_id)
+    if not gp:
+        return jsonify({'error': 'Grand Prix non trovato'}), 404
+    
+    team = Team.query.get(team_id)
+    if not team:
+        return jsonify({'error': 'Team non trovato'}), 404
+    
+    # Check if result already exists
+    result = TeamResult.query.filter_by(team_id=team_id, gp_id=gp_id).first()
+    if not result:
+        result = TeamResult(team_id=team_id, user_id=team.user_id, gp_id=gp_id)
+        db.session.add(result)
+    
+    result.points = points
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'result': result.to_dict()
+    }), 201
+
+# ============ JOB SCHEDULE ============
+
+@app.route('/api/weekendPoints', methods=['GET'])
+def get_weekend_points():
+    result = run_scoring_job()
+
+    return jsonify({
+        'success': True,
+        'result': result
     }), 200
 
 # ============ REFERENCE DATA ============

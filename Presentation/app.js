@@ -9,6 +9,7 @@
 let DRIVERS = [];  // Fetched from API
 let CONSTRUCTORS = [];  // Fetched from API
 let LEAGUES_DB = {};  // Fetched from API when needed
+let GRANDPRIX = [];  // Fetched from API
 
 // ────────────────────────────────────────────────────────────────────────
 // STATE
@@ -18,6 +19,9 @@ let currentUser = null;
 let authMode = 'login';
 let selDrivers = [];
 let selConstrs = [];
+let selectedGP = null;  // Currently selected Grand Prix
+let teamCanEdit = true;  // Whether team can be edited based on lock_date
+let selectedLeagueGP = null;  // Selected GP for league view
 
 const BUDGET = 100;
 let myLeagues = ['POLE24'];
@@ -30,15 +34,27 @@ const API_BASE = 'http://localhost:5000/api';
 
 async function initApp() {
   try {
-    const driversResp = await fetch(API_BASE + '/drivers');
+    const [driversResp, constrsResp, leaguesResp, gpsResp] = await Promise.all([
+      fetch(API_BASE + '/drivers'),
+      fetch(API_BASE + '/constructors'),
+      fetch(API_BASE + '/leagues'),
+      fetch(API_BASE + '/grandprix')
+    ]);
+    
     DRIVERS = await driversResp.json();
-    
-    const constrsResp = await fetch(API_BASE + '/constructors');
     CONSTRUCTORS = await constrsResp.json();
-    
-    const leaguesResp = await fetch(API_BASE + '/leagues');
     const leagues = await leaguesResp.json();
+    GRANDPRIX = await gpsResp.json();
+    
+    console.log('DRIVERS:', DRIVERS.length);
+    console.log('CONSTRUCTORS:', CONSTRUCTORS.length);
+    console.log('GRANDPRIX:', GRANDPRIX.length);
+    
     leagues.forEach(l => { LEAGUES_DB[l.code] = l; });
+    
+    // Set current GP (the one with status='current', or first future one)
+    selectedGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future');
+    console.log('Selected GP:', selectedGP);
   } catch(e) {
     console.error('Failed to load reference data:', e);
     showToast('Errore caricamento dati', false);
@@ -160,13 +176,49 @@ function calcRem() {
 }
 
 function renderTeamBuilder() { 
+  renderGPSelector();
+  loadTeamForGP();
   renderDriverGrid(); 
   renderConstrGrid(); 
   renderSlots(); 
   updateBudget(); 
 }
 
+function renderGPSelector() {
+  const gpSelector = $('gp-selector');
+  gpSelector.innerHTML = GRANDPRIX.map(gp => {
+    const isSelected = selectedGP && gp.id === selectedGP.id;
+    const isLocked = gp.status !== 'current';
+    return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}${isLocked ? ' disabled' : ''}>
+      Gran Premio del ${gp.name}
+    </option>`;
+  }).join('');
+}
+
+async function loadTeamForGP() {
+  if (!selectedGP || !currentUser) return;
+  
+  try {
+    const resp = await fetch(API_BASE + `/team/${currentUser.id}/${selectedGP.id}`);
+    const team = await resp.json();
+    
+    selDrivers = team.drivers || [];
+    selConstrs = team.constructors || [];
+    teamCanEdit = team.can_edit;
+    console.log('Team loaded - can_edit:', teamCanEdit);
+    
+    // Disable save button if team is locked or incomplete
+    $('save-btn').disabled = !teamCanEdit || team.drivers.length !== 5 || team.constructors.length !== 2;
+  } catch(e) {
+    console.error('Error loading team:', e);
+    selDrivers = [];
+    selConstrs = [];
+    teamCanEdit = false;
+  }
+}
+
 function renderDriverGrid() {
+  console.log('renderDriverGrid - DRIVERS:', DRIVERS.length, 'selDrivers:', selDrivers.length, 'budget left:', calcRem());
   $('drivers-grid').innerHTML = DRIVERS.map(d => {
     const sel = !!selDrivers.find(x => x.id === d.id);
     const dis = !sel && (selDrivers.length >= 5 || calcRem() - d.price < 0);
@@ -246,6 +298,8 @@ function updateBudget() {
 }
 
 function toggleDriver(id) {
+  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  
   const d = DRIVERS.find(x => x.id === id);
   const idx = selDrivers.findIndex(x => x.id === id);
   if(idx >= 0) { selDrivers.splice(idx, 1); }
@@ -254,10 +308,16 @@ function toggleDriver(id) {
     if(calcRem() - d.price < 0) { showToast('Budget insufficiente!'); return; }
     selDrivers.push(d);
   }
-  renderTeamBuilder();
+  // Render only the UI, don't reload from server
+  renderDriverGrid(); 
+  renderConstrGrid(); 
+  renderSlots(); 
+  updateBudget();
 }
 
 function toggleConstr(id) {
+  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  
   const c = CONSTRUCTORS.find(x => x.id === id);
   const idx = selConstrs.findIndex(x => x.id === id);
   if(idx >= 0) { selConstrs.splice(idx, 1); }
@@ -266,11 +326,18 @@ function toggleConstr(id) {
     if(calcRem() - c.price < 0) { showToast('Budget insufficiente!'); return; }
     selConstrs.push(c);
   }
-  renderTeamBuilder();
+  // Render only the UI, don't reload from server
+  renderDriverGrid(); 
+  renderConstrGrid(); 
+  renderSlots(); 
+  updateBudget();
 }
 
 function saveTeam() {
-  fetch(API_BASE + '/team/' + currentUser.id, {
+  if (!selectedGP) { showToast('Seleziona un Grand Prix'); return; }
+  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  
+  fetch(API_BASE + '/team/' + currentUser.id + '/' + selectedGP.id, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
@@ -280,11 +347,18 @@ function saveTeam() {
   })
   .then(r => r.json())
   .then(data => {
-    if(data.error) { showToast('Errore nel salvataggio'); return; }
-    showToast('Team salvato! Buona gara!', true);
-    setTimeout(() => goTo('leagues'), 1200);
+    if(data.error) { showToast(data.error); return; }
+    showToast('Team salvato per ' + selectedGP.name + '!', true);
   })
   .catch(e => showToast('Errore: ' + e.message));
+}
+
+function changeGP(gpId) {
+  const newGP = GRANDPRIX.find(gp => gp.id === parseInt(gpId));
+  if (newGP && newGP !== selectedGP) {
+    selectedGP = newGP;
+    renderTeamBuilder();  // This will call loadTeamForGP() which sets teamCanEdit
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -326,31 +400,69 @@ function renderLeagues() {
   const l = LEAGUES_DB[leagueCode] || {name:leagueCode, members:0, round:'Round 14'};
   
   $('lb-name').textContent = l.name;
-  $('lb-round').textContent = l.round;
   $('lb-members').textContent = l.members + ' manager';
 
-  // Podium
-  const [p1, p2, p3] = [LB[0], LB[1], LB[2]];
-  $('podium').innerHTML =
-    `<div class="podium-card p2"><div class="pod-pos">2</div><div class="pod-name">${p2.name}</div><div class="pod-team">${p2.team}</div><div class="pod-pts">${p2.pts}</div></div>
-     <div class="podium-card p1"><div class="pod-pos">1</div><div class="pod-name">${p1.name}</div><div class="pod-team">${p1.team}</div><div class="pod-pts">${p1.pts}</div></div>
-     <div class="podium-card p3"><div class="pod-pos">3</div><div class="pod-name">${p3.name}</div><div class="pod-team">${p3.team}</div><div class="pod-pts">${p3.pts}</div></div>`;
-
-  // Leaderboard table
-  $('lb-body').innerHTML = LB.map(r => {
-    const chHtml = r.ch.startsWith('+') ? `<span class="ch-up">&#8593; ${r.ch}</span>` :
-                   r.ch === '0' ? `<span class="ch-eq">&#8212;</span>` :
-                   `<span class="ch-dn">&#8595; ${r.ch}</span>`;
-    return `<tr class="${r.me ? 'me-row' : ''}">
-      <td><span class="lb-pos${r.rank <= 3 ? ' gold' : ''}">${r.rank}</span></td>
-      <td><div class="lb-name">${r.me ? '&#9658; ' : ''}${r.name}${r.me ? '<span class="me-badge">Tu</span>' : ''}</div><div class="lb-team-name">${r.team}</div></td>
-      <td><span class="lb-pts">${r.pts}</span></td>
-      <td>${chHtml}</td>
-    </tr>`;
+  // GP Selector
+  $('gp-selector-league').innerHTML = GRANDPRIX.map(gp => {
+    const isSelected = selectedLeagueGP && gp.id === selectedLeagueGP.id;
+    return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}>
+      Gran Premio del ${gp.name}
+    </option>`;
   }).join('');
+
+  // Load results for selected GP
+  if (selectedLeagueGP) {
+    loadLeagueGPResults();
+  }
+}
+
+async function loadLeagueGPResults() {
+  if (!selectedLeagueGP || !activeLeague) return;
+  
+  try {
+    // Get league ID from code
+    const leagueResp = await fetch(API_BASE + '/leagues/' + activeLeague);
+    const leagueData = await leagueResp.json();
+    
+    const resultsResp = await fetch(API_BASE + '/league/' + leagueData.id + '/gp/' + selectedLeagueGP.id);
+    const resultsData = await resultsResp.json();
+    
+    console.log('League GP results:', resultsData);
+    
+    // Render results
+    const results = resultsData.results || [];
+    $('lb-round').textContent = 'Gran Premio del ' + resultsData.gp.name;
+    
+    if (results.length === 0) {
+      $('lb-body').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px">Nessun risultato ancora per questo GP</td></tr>';
+      return;
+    }
+    
+    $('lb-body').innerHTML = results.map((r, idx) => {
+      return `<tr>
+        <td><span class="lb-pos${idx <= 2 ? ' gold' : ''}">${idx + 1}</span></td>
+        <td><div class="lb-name">${r.username}</div></td>
+        <td><span class="lb-pts">${r.points} pts</span></td>
+        <td></td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    console.error('Error loading league GP results:', e);
+    $('lb-body').innerHTML = '<tr><td colspan="4">Errore nel caricamento</td></tr>';
+  }
+}
+
+function changeLeagueGP(gpId) {
+  const newGP = GRANDPRIX.find(gp => gp.id === parseInt(gpId));
+  if (newGP) {
+    selectedLeagueGP = newGP;
+    loadLeagueGPResults();
+  }
 }
 
 function selectLeague(code) { 
-  activeLeague = code; 
+  activeLeague = code;
+  // Set default GP to first future/current one
+  selectedLeagueGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future') || GRANDPRIX[0];
   renderLeagues(); 
 }

@@ -65,7 +65,13 @@
 <div class="screen" id="screen-team">
   <main>
     <div class="page-title">Costruisci il <span>Team</span></div>
-    <div class="page-sub">Seleziona 5 piloti e 2 scuderie · Budget $100M</div>
+    <div class="page-sub">Seleziona 5 piloti e 2 scuderie · Budget $100M per GP</div>
+    
+    <div class="card" style="margin-bottom:16px;padding:12px">
+      <label class="form-label">Scegli il Grand Prix</label>
+      <select id="gp-selector" class="form-input" onchange="changeGP(this.value)" style="cursor:pointer"></select>
+    </div>
+    
     <div class="card budget-bar">
       <div>
         <div class="budget-label">Budget rimasto</div>
@@ -130,7 +136,10 @@
           </div>
           <span class="badge badge-red" id="lb-members">—</span>
         </div>
-        <div class="podium" id="podium"></div>
+        <div class="card" style="margin-bottom:16px;padding:12px">
+          <label class="form-label">Scegli il Grand Prix</label>
+          <select id="gp-selector-league" class="form-input" onchange="changeLeagueGP(this.value)" style="cursor:pointer"></select>
+        </div>
         <div class="card" style="overflow:hidden">
           <table class="lb-table">
             <thead><tr><th>#</th><th>Manager</th><th>Punti</th><th>Δ</th></tr></thead>
