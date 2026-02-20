@@ -34,9 +34,7 @@ const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
 // ────────────────────────────────────────────────────────────────────────
 
 async function initApp() {
-  // Mostra subito login senza aspettare l'API
-  showScreen('login'); 
-
+  
   try {
     const [driversResp, constrsResp, leaguesResp, gpsResp] = await Promise.all([
       fetch(API_BASE + '/drivers'),
