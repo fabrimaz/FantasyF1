@@ -34,7 +34,16 @@ const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
 // ────────────────────────────────────────────────────────────────────────
 
 async function initApp() {
-  
+  try {
+    fetch(API_BASE + '/health')
+  } catch (e) {
+    showToast('Impossibile raggiungere il server', false);
+  }
+
+  const loadingTimer = setTimeout(() => {
+    showToast('Connessione al server in corso, attendere...', true);
+    }, 2000);
+
   try {
     const [driversResp, constrsResp, leaguesResp, gpsResp] = await Promise.all([
       fetch(API_BASE + '/drivers'),
@@ -42,6 +51,8 @@ async function initApp() {
       fetch(API_BASE + '/leagues'),
       fetch(API_BASE + '/grandprix')
     ]);
+
+    clearTimeout(loadingTimer);
     
     DRIVERS = await driversResp.json();
     CONSTRUCTORS = await constrsResp.json();
@@ -58,6 +69,7 @@ async function initApp() {
     selectedGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future');
     console.log('Selected GP:', selectedGP, " ", selectedGP.status);
   } catch(e) {
+    clearTimeout(loadingTimer);
     console.error('Failed to load reference data:', e);
     showToast('Errore caricamento dati', false);
   }
