@@ -13,6 +13,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goTo('team')">Team</button>
     <button class="nav-tab" onclick="goTo('leagues')">Leghe</button>
+    <button class="nav-tab" id="nav-admin-tab" onclick="goTo('admin')" style="display:none">Gestione</button>
   </div>
   <div class="nav-right">
     <span class="nav-user" id="nav-username"></span>
@@ -146,6 +147,29 @@
             <tbody id="lb-body"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="screen" id="screen-admin">
+  <main>
+    <div class="page-title">Gestione <span>Gioco</span></div>
+    <div class="page-sub">Controlla la data fittizia e altre impostazioni</div>
+    
+    <div class="card" style="max-width:500px;margin-top:20px">
+      <div class="section-label">Data Gioco Attuale</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-end">
+        <div style="flex:1">
+          <label class="form-label">Data e Ora</label>
+          <input class="form-input" id="gamestate-date" type="datetime-local" />
+        </div>
+        <button class="btn btn-primary" onclick="updateGameDate()">Aggiorna</button>
+        <button class="btn" onclick="resetGameDate()" style="background:var(--muted);color:var(--text)">Reset</button>
+      </div>
+      <div style="padding:12px;background:rgba(255,255,255,0.05);border-radius:6px;font-size:12px;color:var(--muted)">
+        La data fittizia viene utilizzata per determinare lo stato dei Grand Prix
       </div>
     </div>
   </main>

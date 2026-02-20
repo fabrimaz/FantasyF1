@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult
+from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState
 import os
 import sys
 from datetime import datetime, timedelta
-from schedule.scoring_job import run_scoring_job
+#from schedule.scoring_job import run_scoring_job
 
 app = Flask(__name__)
 
@@ -23,9 +23,22 @@ with app.app_context():
     
     # Seed demo user if doesn't exist
     if not User.query.filter_by(email='demo@f1.com').first():
-        demo_user = User(username='demo', email='demo@f1.com')
+        demo_user = User(username='demo', email='demo@f1.com', role='Player')
         demo_user.set_password('demo123')
         db.session.add(demo_user)
+        db.session.commit()
+    
+    # Seed admin user if doesn't exist
+    if not User.query.filter_by(email='admin@f1.com').first():
+        admin_user = User(username='admin', email='admin@f1.com', role='Administrator')
+        admin_user.set_password('admin123')
+        db.session.add(admin_user)
+        db.session.commit()
+    
+    # Initialize GameState if doesn't exist
+    if not GameState.query.first():
+        game_state = GameState(current_date=datetime.utcnow())
+        db.session.add(game_state)
         db.session.commit()
     
     # Seed default leagues
@@ -52,7 +65,7 @@ with app.app_context():
     gps = [
         # Note: Sprint races are at Australia, China, USA, Brazil in 2026 (lock after Fri qualifying)
         # Regular weeks: lock after Sat qualifying
-        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
+        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 3, 28, 17, 0)},
         {'round': 2, 'name': 'Saudi Arabia', 'circuit': 'Jeddah Corniche Circuit', 'date': datetime(2026, 3, 8), 'fp1_start': datetime(2026, 3, 6, 10, 0), 'lock_date': datetime(2026, 3, 7, 17, 0)},
         {'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint: lock after Fri Q
         {'round': 4, 'name': 'China', 'circuit': 'Shanghai International Circuit', 'date': datetime(2026, 4, 5), 'fp1_start': datetime(2026, 4, 3, 9, 0), 'lock_date': datetime(2026, 4, 3, 18, 0)},  # Sprint
@@ -120,7 +133,7 @@ def register():
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username gia in uso'}), 400
     
-    user = User(username=username, email=email)
+    user = User(username=username, email=email, role='Player')
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
@@ -332,7 +345,8 @@ def save_team_result(team_id, gp_id):
 
 @app.route('/api/weekendPoints', methods=['GET'])
 def get_weekend_points():
-    result = run_scoring_job()
+    result = 100
+    #result = run_scoring_job()
 
     return jsonify({
         'success': True,
@@ -383,7 +397,83 @@ def get_constructors():
     ]
     return jsonify(constructors), 200
 
-# ============ HEALTH CHECK ============
+# ============ ADMIN ENDPOINTS ============
+
+@app.route('/api/game/state', methods=['GET'])
+def get_game_state():
+    """Ritorna lo stato del gioco (data fittizia)"""
+    game_state = GameState.query.first()
+    if not game_state:
+        return jsonify({'error': 'Game state non trovato'}), 404
+    return jsonify(game_state.to_dict()), 200
+
+@app.route('/api/game/state', methods=['POST'])
+def update_game_state():
+    """Aggiorna la data fittizia del gioco (solo admin)"""
+    data = request.get_json()
+    
+    # Verifica admin
+    user_id = data.get('admin_id')
+    if not user_id:
+        return jsonify({'error': 'Admin ID richiesto'}), 400
+    
+    admin = User.query.get(user_id)
+    if not admin or admin.role != 'Administrator':
+        return jsonify({'error': 'Solo admin può modificare la data'}), 403
+    
+    # Aggiorna data
+    new_date = data.get('current_date')
+    if not new_date:
+        return jsonify({'error': 'current_date richiesto'}), 400
+    
+    try:
+        # Prova il parsing ISO
+        game_date = datetime.fromisoformat(new_date.replace('Z', '+00:00'))
+    except:
+        return jsonify({'error': 'Formato data non valido. Usa ISO format (es. 2026-03-15T10:00:00)'}), 400
+    
+    game_state = GameState.query.first()
+    if not game_state:
+        game_state = GameState(current_date=game_date)
+        db.session.add(game_state)
+    else:
+        game_state.current_date = game_date
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'game_state': game_state.to_dict()
+    }), 200
+
+@app.route('/api/game/state/reset', methods=['POST'])
+def reset_game_state():
+    """Resetta la data fittizia a now con offset 0 (solo admin)"""
+    data = request.get_json()
+    
+    # Verifica admin
+    user_id = data.get('admin_id')
+    if not user_id:
+        return jsonify({'error': 'Admin ID richiesto'}), 400
+    
+    admin = User.query.get(user_id)
+    if not admin or admin.role != 'Administrator':
+        return jsonify({'error': 'Solo admin può resettare la data'}), 403
+    
+    game_state = GameState.query.first()
+    if not game_state:
+        game_state = GameState(current_date=datetime.utcnow(), offset_hours=0)
+        db.session.add(game_state)
+    else:
+        game_state.current_date = datetime.utcnow()
+        game_state.offset_hours = 0
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'game_state': game_state.to_dict()
+    }), 200
 
 @app.route('/api/health', methods=['GET'])
 def health():

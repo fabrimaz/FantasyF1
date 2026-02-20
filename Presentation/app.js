@@ -54,7 +54,7 @@ async function initApp() {
     
     // Set current GP (the one with status='current', or first future one)
     selectedGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future');
-    console.log('Selected GP:', selectedGP);
+    console.log('Selected GP:', selectedGP, " ", selectedGP.status);
   } catch(e) {
     console.error('Failed to load reference data:', e);
     showToast('Errore caricamento dati', false);
@@ -95,11 +95,16 @@ function showScreen(name) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   if(name === 'team') document.querySelectorAll('.nav-tab')[0].classList.add('active');
   if(name === 'leagues') document.querySelectorAll('.nav-tab')[1].classList.add('active');
+  if(name === 'admin') {
+    const adminTab = document.querySelectorAll('.nav-tab')[2];
+    if(adminTab) adminTab.classList.add('active');
+  }
 }
 
 function goTo(screen) { 
   showScreen(screen); 
-  if(screen === 'leagues') renderLeagues(); 
+  if(screen === 'leagues') renderLeagues();
+  if(screen === 'admin') renderAdmin();
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -147,10 +152,31 @@ function doAuth() {
   .catch(e => showErr('Errore: ' + e.message));
 }
 
-function setUser(u) {
+async function setUser(u) {
   currentUser = u;
   $('nav-username').textContent = u.username;
   $('nav').style.display = 'flex';
+  
+  // Mostra tab admin solo se Administrator
+  const adminTab = $('nav-admin-tab');
+  if(u.role === 'Administrator') {
+    adminTab.style.display = 'block';
+  } else {
+    adminTab.style.display = 'none';
+  }
+  
+  // Fetch user's leagues
+  try {
+    const resp = await fetch(API_BASE + '/leagues/user/' + u.id);
+    myLeagues = await resp.json();
+    myLeagues = myLeagues.map(l => l.code);  // Extract codes
+    activeLeague = myLeagues[0] || null;
+  } catch(e) {
+    console.error('Error fetching user leagues:', e);
+    myLeagues = [];
+    activeLeague = null;
+  }
+  
   showScreen('team');
   renderTeamBuilder();
 }
@@ -159,6 +185,8 @@ function logout() {
   currentUser = null;
   selDrivers = [];
   selConstrs = [];
+  myLeagues = [];
+  activeLeague = null;
   $('nav').style.display = 'none';
   showScreen('login');
 }
@@ -465,4 +493,100 @@ function selectLeague(code) {
   // Set default GP to first future/current one
   selectedLeagueGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future') || GRANDPRIX[0];
   renderLeagues(); 
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// ADMIN PANEL
+// ────────────────────────────────────────────────────────────────────────
+
+async function renderAdmin() {
+  // Carica lo stato del gioco
+  try {
+    const resp = await fetch(API_BASE + '/game/state');
+    const gameState = await resp.json();
+    
+    // Popola il campo data
+    const dateInput = $('gamestate-date');
+    const date = new Date(gameState.current_date);
+    dateInput.value = date.toISOString().slice(0, 16);  // Formato per datetime-local
+  } catch(e) {
+    console.error('Error loading game state:', e);
+    showToast('Errore caricamento stato gioco', false);
+  }
+}
+
+async function updateGameDate() {
+  if(!currentUser || currentUser.role !== 'Administrator') {
+    showToast('Solo admin può modificare la data', false);
+    return;
+  }
+  
+  const dateInput = $('gamestate-date');
+  const dateStr = dateInput.value;
+  if(!dateStr) {
+    showToast('Seleziona una data', false);
+    return;
+  }
+  
+  // Il formato datetime-local è già nel formato corretto: YYYY-MM-DDTHH:mm
+  // Convertiamo semplicemente aggiungendo :00 per i secondi
+  const isoDate = dateStr + ':00';
+  
+  try {
+    const resp = await fetch(API_BASE + '/game/state', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        admin_id: currentUser.id,
+        current_date: isoDate
+      })
+    });
+    
+    const data = await resp.json();
+    if(data.error) {
+      showToast(data.error, false);
+      return;
+    }
+    
+    showToast('Data gioco aggiornata con successo!', true);
+    // Ricarica tutte le viste per riflettere i nuovi stati dei GP
+    renderTeamBuilder();
+    renderLeagues();
+  } catch(e) {
+    showToast('Errore: ' + e.message, false);
+  }
+}
+
+async function resetGameDate() {
+  if(!currentUser || currentUser.role !== 'Administrator') {
+    showToast('Solo admin può resettare la data', false);
+    return;
+  }
+  
+  if(!confirm('Sei sicuro? La data verrà resettata a now con offset 0')) {
+    return;
+  }
+  
+  try {
+    const resp = await fetch(API_BASE + '/game/state/reset', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        admin_id: currentUser.id
+      })
+    });
+    
+    const data = await resp.json();
+    if(data.error) {
+      showToast(data.error, false);
+      return;
+    }
+    
+    showToast('Data ripristinata con successo!', true);
+    renderAdmin();
+    renderTeamBuilder();
+    renderLeagues();
+  } catch(e) {
+    showToast('Errore: ' + e.message, false);
+  }
 }

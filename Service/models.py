@@ -11,6 +11,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default='Player', nullable=False)  # 'Player' or 'Administrator'
     teams = db.relationship('Team', backref='user', lazy=True, cascade='all, delete-orphan')
     league_memberships = db.relationship('LeagueMembership', backref='user', lazy=True, cascade='all, delete-orphan')
     
@@ -24,7 +25,8 @@ class User(db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'email': self.email
+            'email': self.email,
+            'role': self.role
         }
 
 class GrandPrix(db.Model):
@@ -52,13 +54,16 @@ class GrandPrix(db.Model):
         }
     
     def get_status(self):
-        from datetime import datetime
-        today = datetime.utcnow().date()
-        gp_date = self.date.date() if hasattr(self.date, 'date') else self.date
+        """Determina lo status del GP usando la data fittizia del gioco"""
+        game_date = GameState.get_game_date()
+        gp_date = self.date
+        gp_lock = self.lock_date
         
-        if today > gp_date:
+        if game_date >= gp_date:
             return 'past'
-        elif today == gp_date:
+        elif gp_lock and game_date >= gp_lock and game_date < gp_date:
+            return 'started'
+        elif gp_lock and game_date <= gp_lock:
             return 'current'
         else:
             return 'future'
@@ -86,10 +91,9 @@ class Team(db.Model):
         return json.loads(self.constructors_json)
     
     def to_dict(self):
-        from datetime import datetime
-        now = datetime.utcnow()
-        # Team can be edited if we haven't reached the lock_date yet
-        can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > now
+        # Team can be edited if we haven't reached the lock_date yet (using game date)
+        game_date = GameState.get_game_date()
+        can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > game_date
         return {
             'id': self.id,
             'gp_id': self.gp_id,
@@ -161,3 +165,29 @@ class TeamResult(db.Model):
             'points': self.points,
             'username': self.user.username
         }
+
+class GameState(db.Model):
+    __tablename__ = 'game_state'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    current_date = db.Column(db.DateTime, nullable=False)  # Data fittizia del gioco
+    offset_hours = db.Column(db.Integer, default=0)  # Offset in ore rispetto a UTC
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
+    def to_dict(self):
+        return {
+            'current_date': self.current_date.isoformat(),
+            'offset_hours': self.offset_hours
+        }
+    
+    @staticmethod
+    def get_game_date():
+        """Ritorna la data fittizia del gioco"""
+        from datetime import datetime
+        gs = GameState.query.first()
+        if not gs:
+            # Se non esiste, creala basata su UTC now
+            gs = GameState(current_date=datetime.utcnow())
+            db.session.add(gs)
+            db.session.commit()
+        return gs.current_date
