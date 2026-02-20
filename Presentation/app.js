@@ -216,9 +216,8 @@ function renderGPSelector() {
   const gpSelector = $('gp-selector');
   gpSelector.innerHTML = GRANDPRIX.map(gp => {
     const isSelected = selectedGP && gp.id === selectedGP.id;
-    const isLocked = gp.status !== 'current';
-    return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}${isLocked ? ' disabled' : ''}>
-      Gran Premio del ${gp.name}
+    return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}>
+      ${gp.name}${gp.status === 'current' ? ' (attualmente modificabile)' : gp.status === 'future' ? ' (prossimamente)' : ''}
     </option>`;
   }).join('');
 }
