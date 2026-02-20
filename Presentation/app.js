@@ -205,11 +205,12 @@ function calcRem() {
 
 function renderTeamBuilder() { 
   renderGPSelector();
-  loadTeamForGP();
-  renderDriverGrid(); 
-  renderConstrGrid(); 
-  renderSlots(); 
-  updateBudget(); 
+  loadTeamForGP().then(() => {
+    renderDriverGrid(); 
+    renderConstrGrid(); 
+    renderSlots(); 
+    updateBudget(); 
+  });
 }
 
 function renderGPSelector() {
@@ -226,9 +227,11 @@ async function loadTeamForGP() {
   if (!selectedGP || !currentUser) return;
   
   try {
+    console.log('loadTeamForGP - loading team for user:', currentUser.id, 'GP:', selectedGP.id);
     const resp = await fetch(API_BASE + `/team/${currentUser.id}/${selectedGP.id}`);
     const team = await resp.json();
     
+    console.log('Team data received:', team.drivers.length, team.constructors.length, 'can_edit:', team.can_edit);
     selDrivers = team.drivers || [];
     selConstrs = team.constructors || [];
     teamCanEdit = team.can_edit;
@@ -246,11 +249,13 @@ async function loadTeamForGP() {
 
 function renderDriverGrid() {
   console.log('renderDriverGrid - DRIVERS:', DRIVERS.length, 'selDrivers:', selDrivers.length, 'budget left:', calcRem());
+  
   $('drivers-grid').innerHTML = DRIVERS.map(d => {
-    const sel = !!selDrivers.find(x => x.id === d.id);
-    const dis = !sel && (selDrivers.length >= 5 || calcRem() - d.price < 0);
-    return `<div class="sel-card${sel ? ' sel-active' : ''}${dis ? ' sel-disabled' : ''}"
-      style="border-left-color:${sel ? d.color : 'transparent'}"
+    const isSelected = !!selDrivers.find(x => x.id === d.id);
+    const toDeselect = !isSelected && (selDrivers.length >= 5 || calcRem() - d.price < 0);
+    console.log(`Driver ${d.name} - sel: ${isSelected}, dis: ${toDeselect}`);
+    return `<div class="sel-card${isSelected ? ' sel-active' : ''}${toDeselect ? ' sel-disabled' : ''}"
+      style="border-left-color:${isSelected ? d.color : 'transparent'}"
       onclick="toggleDriver(${d.id})">
       <div class="sel-check">&#10003;</div>
       <div class="driver-num">${d.num}</div>
@@ -325,7 +330,7 @@ function updateBudget() {
 }
 
 function toggleDriver(id) {
-  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  if (!teamCanEdit) { showToast('Team bloccato'); return; }
   
   const d = DRIVERS.find(x => x.id === id);
   const idx = selDrivers.findIndex(x => x.id === id);
