@@ -164,6 +164,7 @@ class League(db.Model):
     
     def to_dict(self):
         return {
+            'id': self.id,
             'code': self.code,
             'name': self.name,
             'members': self.members_count,

@@ -42,13 +42,14 @@ with app.app_context():
     
     # Seed default leagues
     default_leagues = [
-        {'code': 'POLE24', 'name': 'Pole Position League', 'members': 42, 'round': 'Round 14 - Belgium GP'},
-        {'code': 'FERRARI', 'name': 'Forza Ferrari', 'members': 8, 'round': 'Round 14 - Belgium GP'},
-        {'code': 'AMICI01', 'name': 'Sunday Racers', 'members': 6, 'round': 'Round 14 - Belgium GP'},
+        {'id' : 1, 'code': 'POLE24', 'name': 'Pole Position League', 'members': 0, 'round': 'Round 14 - Belgium GP'},
+        {'id' : 2, 'code': 'FERRARI', 'name': 'Forza Ferrari', 'members': 0, 'round': 'Round 14 - Belgium GP'},
+        {'id' : 3, 'code': 'AMICI01', 'name': 'Sunday Racers', 'members': 0, 'round': 'Round 14 - Belgium GP'},
     ]
     for league_data in default_leagues:
         if not League.query.filter_by(code=league_data['code']).first():
             league = League(
+                id=league_data['id'],
                 code=league_data['code'],
                 name=league_data['name'],
                 members_count=league_data['members'],
@@ -294,6 +295,7 @@ def get_user_teams(user_id):
 @app.route('/api/leagues', methods=['GET'])
 def get_leagues():
     leagues = League.query.all()
+    print('Fetched leagues:', [l.to_dict() for l in leagues])
     return jsonify([league.to_dict() for league in leagues]), 200
 
 @app.route('/api/leagues/<code>', methods=['GET'])

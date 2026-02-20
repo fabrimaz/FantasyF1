@@ -456,7 +456,7 @@ async function loadLeagueGPResults() {
     const leagueResp = await fetch(API_BASE + '/leagues/' + activeLeague);
     const leagueData = await leagueResp.json();
     
-    const resultsResp = await fetch(API_BASE + '/league/' + leagueData.id + '/gp/' + selectedLeagueGP.id);
+    const resultsResp = await fetch(API_BASE + '/league/' + leagueData.id + '/gp/' + selectedLeagueGP.id + '/results');
     const resultsData = await resultsResp.json();
     
     console.log('League GP results:', resultsData);
@@ -473,7 +473,7 @@ async function loadLeagueGPResults() {
     $('lb-body').innerHTML = results.map((r, idx) => {
       return `<tr>
         <td><span class="lb-pos${idx <= 2 ? ' gold' : ''}">${idx + 1}</span></td>
-        <td><div class="lb-name">${r.username}</div></td>
+        <td><div class="lb-name">${r.team}</div></td>
         <td><span class="lb-pts">${r.points} pts</span></td>
         <td></td>
       </tr>`;
