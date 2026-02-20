@@ -27,7 +27,7 @@ const BUDGET = 100;
 let myLeagues = ['POLE24'];
 let activeLeague = 'POLE24';
 //const API_BASE = 'http://localhost:5000/api'; // DEBUG
-const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api/'; // PROD
+const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
 
 // ────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
