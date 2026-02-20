@@ -4,6 +4,7 @@ from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResu
 from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from auth import generate_token, require_auth
 
 app = Flask(__name__)
 
