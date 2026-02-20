@@ -398,16 +398,15 @@ def save_team_result(team_id, gp_id):
     }), 201
 
 # ============ JOB SCHEDULE ============
+# Endpoint deprecated - scoring job no longer used
 
-@app.route('/api/weekendPoints', methods=['GET'])
-def get_weekend_points():
-    result = 100
-    result = run_scoring_job()
-
-    return jsonify({
-        'success': True,
-        'result': result
-    }), 200
+# @app.route('/api/weekendPoints', methods=['GET'])
+# def get_weekend_points():
+#     result = 100
+#     return jsonify({
+#         'success': True,
+#         'result': result
+#     }), 200
 
 # ============ REFERENCE DATA ============
 

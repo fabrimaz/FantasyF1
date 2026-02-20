@@ -62,14 +62,15 @@ class GrandPrix(db.Model):
         # Se la gara è passata
         if game_date >= gp_date:
             return 'past'
+        
         # Se siamo nel periodo di gara (tra lock e race date)
         elif gp_lock and game_date >= gp_lock and game_date < gp_date:
             return 'started'
-        # Se siamo PRIMA del lock_date: solo se dentro 7 giorni dalla race è 'current'
+        # Se siamo PRIMA del lock_date: solo se dentro 14 giorni dalla race è 'current'
         # Altrimenti è 'future' (non ancora attivato)
         elif gp_lock and game_date < gp_lock:
             days_until_lock = (gp_lock - game_date).days
-            if days_until_lock <= 7:  # Entro 7 giorni dal lock è 'current'
+            if days_until_lock <= 14:  # Entro 14 giorni dal lock è 'current'
                 return 'current'
             else:
                 return 'future'
