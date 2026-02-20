@@ -60,11 +60,10 @@ with app.app_context():
     GrandPrix.query.delete()
     
     gps = [
-        # Note: Sprint races are at Australia, China, USA, Brazil in 2026 (lock after Fri qualifying)
-        # Regular weeks: lock after Sat qualifying
-        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 3, 28, 17, 0)},
+        # lock_date deve essere PRIMA della gara (sabato qualifiche ore 17:00, o venerdì spa gare sprint ore 18:00)
+        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
         {'round': 2, 'name': 'Saudi Arabia', 'circuit': 'Jeddah Corniche Circuit', 'date': datetime(2026, 3, 8), 'fp1_start': datetime(2026, 3, 6, 10, 0), 'lock_date': datetime(2026, 3, 7, 17, 0)},
-        {'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint: lock after Fri Q
+        {'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint
         {'round': 4, 'name': 'China', 'circuit': 'Shanghai International Circuit', 'date': datetime(2026, 4, 5), 'fp1_start': datetime(2026, 4, 3, 9, 0), 'lock_date': datetime(2026, 4, 3, 18, 0)},  # Sprint
         {'round': 5, 'name': 'Japan', 'circuit': 'Suzuka International Racing Course', 'date': datetime(2026, 4, 19), 'fp1_start': datetime(2026, 4, 17, 10, 0), 'lock_date': datetime(2026, 4, 18, 17, 0)},
         {'round': 6, 'name': 'Monaco', 'circuit': 'Circuit de Monaco', 'date': datetime(2026, 5, 24), 'fp1_start': datetime(2026, 5, 22, 11, 0), 'lock_date': datetime(2026, 5, 23, 17, 0)},
