@@ -4,7 +4,7 @@ from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResu
 from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-from auth import generate_token, require_auth
+from auth import generate_token
 
 app = Flask(__name__)
 
@@ -174,7 +174,8 @@ def login():
     
     return jsonify({
         'success': True,
-        'user': user.to_dict()
+        'user': user.to_dict(),
+        'token': generate_token(user.id)
     }), 200
 
 @app.route('/api/auth/register', methods=['POST'])
