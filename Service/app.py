@@ -421,15 +421,23 @@ def save_team_result(team_id, gp_id):
     }), 201
 
 # ============ JOB SCHEDULE ============
-# Endpoint deprecated - scoring job no longer used
 
-# @app.route('/api/weekendPoints', methods=['GET'])
-# def get_weekend_points():
-#     result = 100
-#     return jsonify({
-#         'success': True,
-#         'result': result
-#     }), 200
+@app.route('/api/processWeekend', methods=['GET'])
+def get_weekend_points():
+    from schedule.scoring_job import run_scoring_job
+    result = 100
+    try:
+        result = run_scoring_job()
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+    
+    return jsonify({
+        'success': True,
+        'result': result
+    }), 200
 
 # ============ REFERENCE DATA ============
 

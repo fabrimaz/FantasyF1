@@ -7,6 +7,7 @@ Schedulato per girare ogni domenica sera dopo il GP
 import requests
 from datetime import datetime
 import sys
+
 import os
 
 # Aggiungi il parent directory al path per gli import
@@ -64,8 +65,9 @@ def get_latest_race():
     """Ottiene il risultato della gara più recente da Ergast API"""
     try:
         # Ottieni l'ultima gara completata
-        response = requests.get('https://ergast.com/api/f1/current/last/results.json', timeout=10)
+        response = requests.get('https://api.jolpi.ca/ergast/f1/current/last/results.json', timeout=10)
         data = response.json()
+        print(data)  # Debug: mostra la risposta completa
         
         if 'MRData' not in data or 'RaceTable' not in data['MRData']:
             print("❌ Nessuna gara trovata su Ergast API")
