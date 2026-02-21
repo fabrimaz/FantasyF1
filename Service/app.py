@@ -5,11 +5,12 @@ from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from auth import generate_token
+import os
 
 app = Flask(__name__)
 
 # Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fantasy_f1.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or 'sqlite:///fantasy_f1.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_SORT_KEYS'] = False
 
