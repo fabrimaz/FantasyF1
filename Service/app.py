@@ -66,25 +66,25 @@ with app.app_context():
     
     gps = [
         # lock_date deve essere PRIMA della gara (sabato qualifiche ore 17:00, o venerdì spa gare sprint ore 18:00)
-        {'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
-        {'round': 2, 'name': 'Saudi Arabia', 'circuit': 'Jeddah Corniche Circuit', 'date': datetime(2026, 3, 8), 'fp1_start': datetime(2026, 3, 6, 10, 0), 'lock_date': datetime(2026, 3, 7, 17, 0)},
-        {'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint
-        {'round': 4, 'name': 'China', 'circuit': 'Shanghai International Circuit', 'date': datetime(2026, 4, 5), 'fp1_start': datetime(2026, 4, 3, 9, 0), 'lock_date': datetime(2026, 4, 3, 18, 0)},  # Sprint
-        {'round': 5, 'name': 'Japan', 'circuit': 'Suzuka International Racing Course', 'date': datetime(2026, 4, 19), 'fp1_start': datetime(2026, 4, 17, 10, 0), 'lock_date': datetime(2026, 4, 18, 17, 0)},
-        {'round': 6, 'name': 'Monaco', 'circuit': 'Circuit de Monaco', 'date': datetime(2026, 5, 24), 'fp1_start': datetime(2026, 5, 22, 11, 0), 'lock_date': datetime(2026, 5, 23, 17, 0)},
-        {'round': 7, 'name': 'Canada', 'circuit': 'Circuit Gilles Villeneuve', 'date': datetime(2026, 6, 7), 'fp1_start': datetime(2026, 6, 5, 13, 0), 'lock_date': datetime(2026, 6, 6, 17, 0)},
-        {'round': 8, 'name': 'Spain', 'circuit': 'Circuit de Barcelona-Catalunya', 'date': datetime(2026, 6, 21), 'fp1_start': datetime(2026, 6, 19, 10, 0), 'lock_date': datetime(2026, 6, 20, 17, 0)},
-        {'round': 9, 'name': 'Austria', 'circuit': 'Red Bull Ring', 'date': datetime(2026, 7, 5), 'fp1_start': datetime(2026, 7, 3, 10, 0), 'lock_date': datetime(2026, 7, 4, 17, 0)},
-        {'round': 10, 'name': 'Britain', 'circuit': 'Silverstone Circuit', 'date': datetime(2026, 7, 19), 'fp1_start': datetime(2026, 7, 17, 10, 0), 'lock_date': datetime(2026, 7, 18, 17, 0)},
-        {'round': 11, 'name': 'Belgium', 'circuit': 'Circuit de Spa-Francorchamps', 'date': datetime(2026, 8, 2), 'fp1_start': datetime(2026, 7, 31, 10, 0), 'lock_date': datetime(2026, 8, 1, 17, 0)},
-        {'round': 12, 'name': 'Netherlands', 'circuit': 'Zandvoort Circuit', 'date': datetime(2026, 8, 30), 'fp1_start': datetime(2026, 8, 28, 11, 0), 'lock_date': datetime(2026, 8, 29, 17, 0)},
-        {'round': 13, 'name': 'Italy', 'circuit': 'Autodromo Nazionale di Monza', 'date': datetime(2026, 9, 6), 'fp1_start': datetime(2026, 9, 4, 10, 0), 'lock_date': datetime(2026, 9, 5, 17, 0)},
-        {'round': 14, 'name': 'Azerbaijan', 'circuit': 'Baku City Circuit', 'date': datetime(2026, 9, 20), 'fp1_start': datetime(2026, 9, 18, 9, 0), 'lock_date': datetime(2026, 9, 19, 17, 0)},
-        {'round': 15, 'name': 'Singapore', 'circuit': 'Marina Bay Street Circuit', 'date': datetime(2026, 10, 4), 'fp1_start': datetime(2026, 10, 2, 10, 0), 'lock_date': datetime(2026, 10, 3, 17, 0)},
-        {'round': 16, 'name': 'USA', 'circuit': 'Circuit of the Americas', 'date': datetime(2026, 10, 18), 'fp1_start': datetime(2026, 10, 16, 12, 0), 'lock_date': datetime(2026, 10, 16, 18, 0)},  # Sprint
-        {'round': 17, 'name': 'Mexico', 'circuit': 'Autódromo Hermanos Rodríguez', 'date': datetime(2026, 10, 25), 'fp1_start': datetime(2026, 10, 23, 11, 0), 'lock_date': datetime(2026, 10, 24, 17, 0)},
-        {'round': 18, 'name': 'Brazil', 'circuit': 'Autódromo José Carlos Pace', 'date': datetime(2026, 11, 1), 'fp1_start': datetime(2026, 10, 30, 12, 0), 'lock_date': datetime(2026, 10, 30, 18, 0)},  # Sprint
-        {'round': 19, 'name': 'Abu Dhabi', 'circuit': 'Yas Marina Circuit', 'date': datetime(2026, 11, 29), 'fp1_start': datetime(2026, 11, 27, 8, 0), 'lock_date': datetime(2026, 11, 28, 17, 0)},
+        {'id': 1, 'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
+        {'id': 2,'round': 2, 'name': 'Saudi Arabia', 'circuit': 'Jeddah Corniche Circuit', 'date': datetime(2026, 3, 8), 'fp1_start': datetime(2026, 3, 6, 10, 0), 'lock_date': datetime(2026, 3, 7, 17, 0)},
+        {'id': 3,'round': 3, 'name': 'Australia', 'circuit': 'Albert Park Circuit', 'date': datetime(2026, 3, 22), 'fp1_start': datetime(2026, 3, 20, 19, 0), 'lock_date': datetime(2026, 3, 20, 18, 0)},  # Sprint
+        {'id': 4,'round': 4, 'name': 'China', 'circuit': 'Shanghai International Circuit', 'date': datetime(2026, 4, 5), 'fp1_start': datetime(2026, 4, 3, 9, 0), 'lock_date': datetime(2026, 4, 3, 18, 0)},  # Sprint
+        {'id': 5,'round': 5, 'name': 'Japan', 'circuit': 'Suzuka International Racing Course', 'date': datetime(2026, 4, 19), 'fp1_start': datetime(2026, 4, 17, 10, 0), 'lock_date': datetime(2026, 4, 18, 17, 0)},
+        {'id': 6,'round': 6, 'name': 'Monaco', 'circuit': 'Circuit de Monaco', 'date': datetime(2026, 5, 24), 'fp1_start': datetime(2026, 5, 22, 11, 0), 'lock_date': datetime(2026, 5, 23, 17, 0)},
+        {'id': 7,'round': 7, 'name': 'Canada', 'circuit': 'Circuit Gilles Villeneuve', 'date': datetime(2026, 6, 7), 'fp1_start': datetime(2026, 6, 5, 13, 0), 'lock_date': datetime(2026, 6, 6, 17, 0)},
+        {'id': 8,'round': 8, 'name': 'Spain', 'circuit': 'Circuit de Barcelona-Catalunya', 'date': datetime(2026, 6, 21), 'fp1_start': datetime(2026, 6, 19, 10, 0), 'lock_date': datetime(2026, 6, 20, 17, 0)},
+        {'id': 9,'round': 9, 'name': 'Austria', 'circuit': 'Red Bull Ring', 'date': datetime(2026, 7, 5), 'fp1_start': datetime(2026, 7, 3, 10, 0), 'lock_date': datetime(2026, 7, 4, 17, 0)},
+        {'id': 10,'round': 10, 'name': 'Britain', 'circuit': 'Silverstone Circuit', 'date': datetime(2026, 7, 19), 'fp1_start': datetime(2026, 7, 17, 10, 0), 'lock_date': datetime(2026, 7, 18, 17, 0)},
+        {'id': 11,'round': 11, 'name': 'Belgium', 'circuit': 'Circuit de Spa-Francorchamps', 'date': datetime(2026, 8, 2), 'fp1_start': datetime(2026, 7, 31, 10, 0), 'lock_date': datetime(2026, 8, 1, 17, 0)},
+        {'id': 12,'round': 12, 'name': 'Netherlands', 'circuit': 'Zandvoort Circuit', 'date': datetime(2026, 8, 30), 'fp1_start': datetime(2026, 8, 28, 11, 0), 'lock_date': datetime(2026, 8, 29, 17, 0)},
+        {'id': 13,'round': 13, 'name': 'Italy', 'circuit': 'Autodromo Nazionale di Monza', 'date': datetime(2026, 9, 6), 'fp1_start': datetime(2026, 9, 4, 10, 0), 'lock_date': datetime(2026, 9, 5, 17, 0)},
+        {'id': 14,'round': 14, 'name': 'Azerbaijan', 'circuit': 'Baku City Circuit', 'date': datetime(2026, 9, 20), 'fp1_start': datetime(2026, 9, 18, 9, 0), 'lock_date': datetime(2026, 9, 19, 17, 0)},
+        {'id': 15,'round': 15, 'name': 'Singapore', 'circuit': 'Marina Bay Street Circuit', 'date': datetime(2026, 10, 4), 'fp1_start': datetime(2026, 10, 2, 10, 0), 'lock_date': datetime(2026, 10, 3, 17, 0)},
+        {'id': 16,'round': 16, 'name': 'USA', 'circuit': 'Circuit of the Americas', 'date': datetime(2026, 10, 18), 'fp1_start': datetime(2026, 10, 16, 12, 0), 'lock_date': datetime(2026, 10, 16, 18, 0)},  # Sprint
+        {'id': 17,'round': 17, 'name': 'Mexico', 'circuit': 'Autódromo Hermanos Rodríguez', 'date': datetime(2026, 10, 25), 'fp1_start': datetime(2026, 10, 23, 11, 0), 'lock_date': datetime(2026, 10, 24, 17, 0)},
+        {'id': 18,'round': 18, 'name': 'Brazil', 'circuit': 'Autódromo José Carlos Pace', 'date': datetime(2026, 11, 1), 'fp1_start': datetime(2026, 10, 30, 12, 0), 'lock_date': datetime(2026, 10, 30, 18, 0)},  # Sprint
+        {'id': 19,'round': 19, 'name': 'Abu Dhabi', 'circuit': 'Yas Marina Circuit', 'date': datetime(2026, 11, 29), 'fp1_start': datetime(2026, 11, 27, 8, 0), 'lock_date': datetime(2026, 11, 28, 17, 0)},
     ]
     for gp_data in gps:
         gp = GrandPrix(
