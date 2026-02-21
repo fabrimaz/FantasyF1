@@ -1,7 +1,7 @@
 """
 Fantasy F1 Scoring Job
 Calcola i punteggi dei team basandosi sui risultati ufficiali F1 (Ergast API)
-Schedulato per girare ogni domenica sera dopo il GP
+Schedulato per girare ogni domenica sera dopo il GP o chiamata da API
 """
 
 import requests
@@ -61,11 +61,11 @@ CONSTRUCTOR_MAPPING = {
     'sauber': 10,
 }
 
-def get_latest_race():
+def get_race(weekend_id=None):
     """Ottiene il risultato della gara più recente da Ergast API"""
     try:
-        # Ottieni l'ultima gara completata
-        response = requests.get('https://api.jolpi.ca/ergast/f1/current/last/results.json', timeout=10)
+        url = f'https://ergast.com/api/f1/current/{weekend_id}/results.json' if weekend_id else 'https://ergast.com/api/f1/current/last/results.json'
+        response = requests.get(url, timeout=10)
         data = response.json()
         print(data)  # Debug: mostra la risposta completa
         
@@ -153,20 +153,20 @@ def process_race_results(race_data, gp_id):
             db.session.add(result)
         
         result.points = int(score)
-        print(f"  ✅ Team {team.user.username} (GP {gp_id}): {score} pts")
+        print(f"Team {team.user.username} (GP {gp_id}): {score} pts")
     
     db.session.commit()
-    print("✅ Punteggi salvati nel database")
+    print("Punteggi salvati nel database")
 
-def run_scoring_job():
+def run_scoring_job(weekend_id=None):
     """Main job - eseguito ogni domenica sera"""
     with app.app_context():
         print(f"\n{'='*60}")
-        print(f"🏁 FANTASY F1 SCORING JOB - {datetime.now().isoformat()}")
+        print(f"FANTASY F1 SCORING JOB - {datetime.now().isoformat()} - Weekend ID: {weekend_id if weekend_id else 'LAST'}")
         print(f"{'='*60}\n")
         
         # 1. Ottieni i risultati della gara più recente da Ergast
-        race_data = get_latest_race()
+        race_data = get_race()
         if not race_data:
             message ="❌ Job abortito: nessun dato di gara disponibile"
             print(message)

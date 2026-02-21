@@ -426,19 +426,22 @@ def save_team_result(team_id, gp_id):
 # ============ JOB SCHEDULE ============
 
 @app.route('/api/processWeekend', methods=['GET'])
-def get_weekend_points():
+@app.route('/api/processWeekend/<int:weekend_id>', methods=['GET'])
+def get_weekend_points(weekend_id=None):
     from schedule.scoring_job import run_scoring_job
     result = 100
     try:
-        result = run_scoring_job()
+        result = run_scoring_job(weekend_id)
     except Exception as e:
         return jsonify({
             'success': False,
+            'weekend_id': weekend_id if weekend_id else 'current',
             'error': str(e)
         }), 500
     
     return jsonify({
         'success': True,
+        'weekend_id': weekend_id if weekend_id else 'current',
         'result': result
     }), 200
 
