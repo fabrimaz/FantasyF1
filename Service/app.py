@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from sqlalchemy import text
 from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
@@ -63,6 +64,7 @@ with app.app_context():
     # Seed Grand Prix (2026 F1 season) 
     # Clear existing GP data
     GrandPrix.query.delete()
+    db.session.execute(text("ALTER SEQUENCE grand_prix_id_seq RESTART WITH 1"))
     
     gps = [
         # lock_date deve essere PRIMA della gara (sabato qualifiche ore 17:00, o venerdì spa gare sprint ore 18:00)
@@ -88,6 +90,7 @@ with app.app_context():
     ]
     for gp_data in gps:
         gp = GrandPrix(
+            id=gp_data['id'],
             round_num=gp_data['round'],
             name=gp_data['name'],
             circuit=gp_data['circuit'],
@@ -124,6 +127,7 @@ with app.app_context():
     ]
     for driver_data in drivers_data:
         driver = Driver(
+            id=driver_data['num'],  # Usa il numero del pilota come ID
             number=driver_data['num'],
             name=driver_data['name'],
             team=driver_data['team'],
