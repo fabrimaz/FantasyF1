@@ -60,7 +60,7 @@ with app.app_context():
             db.session.add(league)
     db.session.commit()
     
-    # Seed Grand Prix (2026 F1 season)
+    # Seed Grand Prix (2026 F1 season) 
     # Clear existing GP data
     GrandPrix.query.delete()
     
