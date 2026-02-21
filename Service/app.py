@@ -65,7 +65,7 @@ with app.app_context():
     # Clear existing GP data
     GrandPrix.query.delete()
     db.session.execute(text("ALTER SEQUENCE grand_prix_id_seq RESTART WITH 1"))
-    
+
     gps = [
         # lock_date deve essere PRIMA della gara (sabato qualifiche ore 17:00, o venerdì spa gare sprint ore 18:00)
         {'id': 1, 'round': 1, 'name': 'Bahrain', 'circuit': 'Bahrain International Circuit', 'date': datetime(2026, 3, 1), 'fp1_start': datetime(2026, 2, 27, 10, 0), 'lock_date': datetime(2026, 2, 28, 17, 0)},
@@ -103,6 +103,8 @@ with app.app_context():
     
     # Seed Drivers (griglia 2026)
     Driver.query.delete()
+    db.session.execute(text("ALTER SEQUENCE driver_id_seq RESTART WITH 1"))
+
     drivers_data = [
         {'num':3,  'name':'Max Verstappen',     'team':'Red Bull Racing',  'price':25.0, 'pts':0, 'color':'#0600FF'},
         {'num':6,  'name':'Isack Hadjar',       'team':'Red Bull Racing',  'price':9.0,  'pts':0, 'color':'#0600FF'},
