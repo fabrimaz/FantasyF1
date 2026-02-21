@@ -32,7 +32,7 @@ class User(db.Model):
 class GrandPrix(db.Model):
     __tablename__ = 'grand_prix'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)  # Use my ID as primary key
     round_num = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
