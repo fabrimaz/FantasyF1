@@ -103,7 +103,7 @@ with app.app_context():
     
     # Seed Drivers (griglia 2026)
     Driver.query.delete()
-    db.session.execute(text("ALTER SEQUENCE driver_id_seq RESTART WITH 1"))
+    db.session.execute(text("ALTER SEQUENCE drivers_id_seq RESTART WITH 1"))
 
     drivers_data = [
         {'num':3,  'name':'Max Verstappen',     'team':'Red Bull Racing',  'price':25.0, 'pts':0, 'color':'#0600FF'},
