@@ -41,8 +41,8 @@ async function initApp() {
   }
 
   const loadingTimer = setTimeout(() => {
-    showToast('Connessione al server in corso, attendere...', true);
-    }, 2000);
+    showToast('Connessione al server in corso. In caso di attesa, riavvia l\'app', true);
+    }, 5000);
 
   try {
     const [driversResp, constrsResp, leaguesResp, gpsResp] = await Promise.all([
