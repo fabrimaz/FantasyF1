@@ -46,7 +46,7 @@ CONSTRUCTOR_MAPPING = {
 def get_race(weekend_id=None):
     """Ottiene il risultato della gara più recente da Ergast API"""
     try:
-        url = f'https://ergast.com/api/f1/current/{weekend_id}/results.json' if weekend_id else 'https://ergast.com/api/f1/current/last/results.json'
+        url = f'https://api.jolpi.ca/ergast/f1/current/{weekend_id}/results.json' if weekend_id else 'https://api.jolpi.ca/ergast/f1/current/last/results.json'
 
         if weekend_id == 100:
             #testing api
@@ -125,7 +125,7 @@ def calculate_team_score(team, race_results):
                 points = FantasyF1_POINTS.get(position, 0) / 2
                 print(f"  🏁 Costruttore {constructor['name']} points {points} (position {position})")
                 total_score += points
-                
+
     return total_score
 
 def process_race_results(race_data, gp_id):
@@ -174,7 +174,7 @@ def run_scoring_job(weekend_id=None):
         print(f"{'='*60}\n")
         
         # 1. Ottieni i risultati della gara più recente da Ergast
-        race_data = get_race()
+        race_data = get_race(weekend_id)
         if not race_data:
             message ="❌ Job abortito: nessun dato di gara disponibile"
             print(message)
@@ -187,12 +187,15 @@ def run_scoring_job(weekend_id=None):
             GrandPrix.date >= datetime.fromisoformat(race_date_str),
             GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
         ).first()
-        
-        if not gp:
+
+        if weekend_id == 100:
+            gp = GrandPrix.query.filter_by(id=1).first() 
+            
+        if not gp:  # Se è un test, non serve trovare il GP
             message =f"❌ Nessun GP trovato per la data {race_date_str}"
             print(message)
             return message
-        
+
         match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
         print(match_message)
         
