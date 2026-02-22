@@ -4,8 +4,6 @@ Calcola i punteggi dei team basandosi sui risultati ufficiali F1 (Ergast API)
 Schedulato per girare ogni domenica sera dopo il GP o chiamata da API
 """
 
-from turtle import position
-
 import requests
 from datetime import datetime
 import sys
