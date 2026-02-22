@@ -4,6 +4,8 @@ Calcola i punteggi dei team basandosi sui risultati ufficiali F1 (Ergast API)
 Schedulato per girare ogni domenica sera dopo il GP o chiamata da API
 """
 
+from turtle import position
+
 import requests
 from datetime import datetime
 import sys
@@ -18,33 +20,13 @@ from app import app
 import json
 
 # Punti F1 standard
-F1_POINTS = {
-    1: 25, 2: 18, 3: 15, 4: 12, 5: 10,
-    6: 8, 7: 6, 8: 4, 9: 2, 10: 1
-}
-
-# Mapping numero pilota -> ID nel nostro DB
-DRIVER_MAPPING = {
-    1: 1,      # Max Verstappen
-    11: 2,     # Sergio Perez
-    44: 3,     # Lewis Hamilton
-    63: 4,     # George Russell
-    16: 5,     # Charles Leclerc
-    55: 6,     # Carlos Sainz
-    4: 7,      # Lando Norris
-    81: 8,     # Oscar Piastri
-    14: 9,     # Fernando Alonso
-    18: 10,    # Lance Stroll
-    10: 11,    # Pierre Gasly
-    31: 12,    # Esteban Ocon
-    23: 13,    # Alex Albon
-    22: 14,    # Yuki Tsunoda
-    27: 15,    # Nico Hulkenberg
-    3: 16,     # Daniel Ricciardo
-    77: 17,    # Valtteri Bottas
-    24: 18,    # Guanyu Zhou
-    20: 19,    # Kevin Magnussen
-    2: 20,     # Logan Sargeant
+FantasyF1_POINTS = {
+    1: 50, 2: 36, 3: 30, 4: 24, 5: 20,
+    6: 16, 7: 12, 8: 8, 9: 4, 10: 2,
+    11:1, 12: 1, 13: 0, 14: 0, 15: 0, 
+    16: 0, 17: 0, 18: 0, 19: 0, 20: 0,
+    -10: -10,  # Ritiro
+    -1: -1    # Non partito (W)
 }
 
 # Mapping scuderia -> ID nel nostro DB
@@ -65,6 +47,11 @@ def get_race(weekend_id=None):
     """Ottiene il risultato della gara più recente da Ergast API"""
     try:
         url = f'https://ergast.com/api/f1/current/{weekend_id}/results.json' if weekend_id else 'https://ergast.com/api/f1/current/last/results.json'
+
+        if weekend_id == 100:
+            #testing api
+            url = f'https://api.jolpi.ca/ergast/f1/2025/11/results.json'
+
         response = requests.get(url, timeout=10)
         data = response.json()
         print(data)  # Debug: mostra la risposta completa
@@ -100,26 +87,45 @@ def calculate_team_score(team, race_results):
     constructors = team.get_constructors()
     total_score = 0
     
-    # Crea un dict rapido dei risultati per numero pilota
+    # Crea un dict <pilota, posizione> 
     results_by_number = {}
+    driver_and_constructor = {}
     for result in race_results.get('Results', []):
-        driver_num = int(result['Driver']['driverId'].split('_')[0]) if '_' in result['Driver']['driverId'] else None
-        # Usa il numero di gara (identificativo corto)
-        for mapped_num, driver_id in DRIVER_MAPPING.items():
-            if driver_id == int(result['Driver']['driverId'].split('_')[-1]) if '_' in result['Driver']['driverId'] else mapped_num == int(result['number']):
-                results_by_number[mapped_num] = int(result['position']) if result['position'] != 'R' else None
-                break
+        position = result.get('position')
+        position_text = result.get('positionText')
+        driver_num = int(result['Driver']['permanentNumber'])
+        constructor_name = result['Constructor']['constructorId']
+        constructor_id = CONSTRUCTOR_MAPPING.get(constructor_name, -1)
+        if position_text == 'R':
+            position_value = -10  # Ritiro
+            results_by_number[driver_num] = position_value  # Ritiro = -10
+        elif position_text == 'W':
+            position_value = -1  # Non partito (W)
+            results_by_number[driver_num] = position_value   # Non partito (W) = -1
+        else:
+            position_value = int(position) if position.isdigit() else 0
+            results_by_number[driver_num] = position_value
+        
+        position_list = driver_and_constructor.get(constructor_id, [])
+        position_list.append(position_value)
+        driver_and_constructor[constructor_id] = position_list
     
     # Punteggi driver
     for driver in drivers:
-        # Cerca il numero di gara del driver
-        for car_number, position in results_by_number.items():
-            if position and car_number <= 20:  # Solo driver validi
-                points = F1_POINTS.get(position, 0)
+        position = results_by_number.get(driver['number'], 0)
+        points = FantasyF1_POINTS.get(position, 0)
+        total_score += points
+        print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
+        break
+
+    # Punteggi costruttori (esempio semplificato: +10 se il costruttore ha un driver in top 10)
+    for constructor in constructors:    
+            position_values = driver_and_constructor.get(constructor['id'], [])
+            for position in position_values:
+                points = FantasyF1_POINTS.get(position, 0) / 2
+                print(f"  🏁 Costruttore {constructor['name']} points {points} (position {position})")
                 total_score += points
-                print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
-                break
-    
+                
     return total_score
 
 def process_race_results(race_data, gp_id):
@@ -142,9 +148,11 @@ def process_race_results(race_data, gp_id):
         # Semplificato: usa il numero di driver selezionati come base
         # In una versione reale, faresti il matching con Ergast
         drivers = team.get_drivers()
+        constructors = team.get_constructors()
         
         # Calcolo semplificato per demo: somma dei prezzi (da estendere con veri risultati)
         score = sum(d.get('price', 0) for d in drivers if d)
+        score += sum(c.get('price', 0) for c in constructors if c)
         
         # Salva/aggiorna il risultato
         result = TeamResult.query.filter_by(team_id=team.id, gp_id=gp_id).first()
