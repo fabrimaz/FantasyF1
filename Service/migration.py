@@ -1,7 +1,7 @@
 
 from datetime import datetime
 from pydoc import text
-from Service.models import Constructor, Driver, GrandPrix, League
+from models import Constructor, Driver, GrandPrix, League
 
 
 def initialize_f1_data(db):
