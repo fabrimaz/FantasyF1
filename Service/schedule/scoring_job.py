@@ -72,7 +72,7 @@ def get_race(weekend_id=None):
         print(f"❌ Errore nel caricamento da Ergast API: {e}")
         return None
 
-def calculate_team_score(team, race_results):
+def calculate_team_score(drivers, constructors, race_results):
     """
     Calcola il punteggio totale di un team basandosi sui driver selezionati
     
@@ -83,10 +83,7 @@ def calculate_team_score(team, race_results):
     Returns:
         int: punteggio totale del team
     """
-    drivers = team.get_drivers()
-    constructors = team.get_constructors()
     total_score = 0
-    
     # Crea un dict <pilota, posizione> 
     results_by_number = {}
     driver_and_constructor = {}
@@ -95,6 +92,7 @@ def calculate_team_score(team, race_results):
         position_text = result.get('positionText')
         driver_num = int(result['Driver']['permanentNumber'])
         constructor_name = result['Constructor']['constructorId']
+        print(f"  🏁 Risultato: Driver #{driver_num} ({constructor_name}) - posizione {position} (text: {position_text})")
         constructor_id = CONSTRUCTOR_MAPPING.get(constructor_name, -1)
         if position_text == 'R':
             position_value = -10  # Ritiro
@@ -109,23 +107,26 @@ def calculate_team_score(team, race_results):
         position_list = driver_and_constructor.get(constructor_id, [])
         position_list.append(position_value)
         driver_and_constructor[constructor_id] = position_list
-    
+
+    print()
     # Punteggi driver
     for driver in drivers:
-        position = results_by_number.get(driver['number'], 0)
+        position = results_by_number.get(driver['num'], 0)
         points = FantasyF1_POINTS.get(position, 0)
         total_score += points
         print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
-        break
 
+    print(constructors)
     # Punteggi costruttori (esempio semplificato: +10 se il costruttore ha un driver in top 10)
     for constructor in constructors:    
             position_values = driver_and_constructor.get(constructor['id'], [])
+            print(position_values)
             for position in position_values:
                 points = FantasyF1_POINTS.get(position, 0) / 2
                 print(f"  🏁 Costruttore {constructor['name']} points {points} (position {position})")
                 total_score += points
 
+    print(f"Punteggio totale team: {total_score} pts")
     return total_score
 
 def process_race_results(race_data, gp_id):
@@ -150,9 +151,7 @@ def process_race_results(race_data, gp_id):
         drivers = team.get_drivers()
         constructors = team.get_constructors()
         
-        # Calcolo semplificato per demo: somma dei prezzi (da estendere con veri risultati)
-        score = sum(d.get('price', 0) for d in drivers if d)
-        score += sum(c.get('price', 0) for c in constructors if c)
+        score = calculate_team_score(drivers, constructors, race_data)
         
         # Salva/aggiorna il risultato
         result = TeamResult.query.filter_by(team_id=team.id, gp_id=gp_id).first()
@@ -190,7 +189,7 @@ def run_scoring_job(weekend_id=None):
 
         if weekend_id == 100:
             gp = GrandPrix.query.filter_by(id=1).first() 
-            
+
         if not gp:  # Se è un test, non serve trovare il GP
             message =f"❌ Nessun GP trovato per la data {race_date_str}"
             print(message)
