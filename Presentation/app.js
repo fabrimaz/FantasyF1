@@ -444,7 +444,7 @@ function renderLeagues() {
   // Leaderboard info
   const leagueCode = activeLeague;
   const l = LEAGUES_DB[leagueCode] || {name:leagueCode, members:0, round:'Round 14'};
-  
+
   $('lb-name').textContent = l.name;
   $('lb-members').textContent = l.members + ' manager';
 
@@ -456,10 +456,8 @@ function renderLeagues() {
     </option>`;
   }).join('');
 
-  // Load results for selected GP
-  if (selectedLeagueGP) {
-    loadLeagueGPResults();
-  }
+  selectedLeagueGP = selectedLeagueGP || GRANDPRIX[0];
+  loadLeagueGPResults();
 }
 
 async function loadLeagueGPResults() {
@@ -484,14 +482,17 @@ async function loadLeagueGPResults() {
       return;
     }
     
-    $('lb-body').innerHTML = results.map((r, idx) => {
-      return `<tr>
+    $('lb-body').innerHTML = results.map((r, idx) => 
+    {
+      return `<tr style="cursor:pointer" onclick="showLeagueUserTeam(${r.user_id})">
         <td><span class="lb-pos${idx <= 2 ? ' gold' : ''}">${idx + 1}</span></td>
         <td><div class="lb-name">${r.team}</div></td>
         <td><span class="lb-pts">${r.points} pts</span></td>
-        <td></td>
+        <td>👁</td>
       </tr>`;
-    }).join('');
+    })
+    .join('');
+    console.log('Leaderboard rendered for league:', activeLeague, 'GP:', selectedLeagueGP.name);
   } catch(e) {
     console.error('Error loading league GP results:', e);
     $('lb-body').innerHTML = '<tr><td colspan="4">Errore nel caricamento</td></tr>';
@@ -511,6 +512,58 @@ function selectLeague(code) {
   // Set default GP to first future/current one
   selectedLeagueGP = GRANDPRIX.find(gp => gp.status === 'current') || GRANDPRIX.find(gp => gp.status === 'future') || GRANDPRIX[0];
   renderLeagues(); 
+}
+
+async function showLeagueUserTeam(userId) {
+  console.log('Showing team for user:', userId, 'league GP:', selectedLeagueGP);
+  if (!selectedLeagueGP) return;
+
+  try {
+    const resp = await fetch(API_BASE + `/team/${userId}/${selectedLeagueGP.id}`);
+    const team = await resp.json();
+
+    const drivers = team.drivers || [];
+    const constrs = team.constructors || [];
+    console.log(drivers)
+    const html = `
+      <div style="margin-top:30px" class="card">
+        <div style="font-weight:700;margin:12px;padding:5px;">Team</div>
+        <div class="section-label">Piloti</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding:10px;">
+          ${drivers.map(d => `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,0.05);border-radius:6px;border-left:3px solid ${d.color}">
+              <span style="font-weight:700">${d.num}</span>
+              <span>${d.name}</span>
+              <span style="color:var(--muted);font-size:12px">$${d.price}M</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="section-label">Scuderie</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;">
+          ${constrs.map(c => `
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,0.05);border-radius:6px;border-left:3px solid ${c.color}">
+              <span>${c.name}</span>
+              <span style="color:var(--muted);font-size:12px">$${c.price}M</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+
+      console.log('League user team HTML:', html);
+
+    // Rimuovi eventuale team già aperto
+    const existing = document.getElementById('league-team-detail');
+    if (existing) existing.remove();
+
+    const container = document.createElement('div');
+    container.id = 'league-team-detail';
+    container.innerHTML = html;
+    $('lb-body').closest('.card').after(container);
+    console.log("x2")
+  } catch(e) {
+    console.error('Error loading user team for league:', e);
+    showToast('Errore caricamento team', false);
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────

@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import text
+from Service.schedule.pricing_job import update_pricing
+from Service.schedule.scoring_job import run_scoring_job
 import migration
 from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
@@ -276,6 +278,7 @@ def get_gp_results(league_id, gp_id):
         d['user_id'] = tr.user_id
         d['points'] = tr.points
         d['team'] = next((m.team_name for m in memberships if m.user_id == tr.user_id), None)
+        d['team_id'] = Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first() else None
         output.append(d)
     
 
@@ -285,6 +288,7 @@ def get_gp_results(league_id, gp_id):
         d['user_id'] = member_id
         d['points'] = 0
         d['team'] = next((m.team_name for m in memberships if m.user_id == member_id), None)
+        d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
         output.append(d)
 
     print(output)
@@ -330,6 +334,15 @@ def get_weekend_points(weekend_id=None):
     result = 100
     try:
         result = run_scoring_job(weekend_id)
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'weekend_id': weekend_id if weekend_id else 'current',
+            'error': str(e)
+        }), 500
+    
+    try:
+        result = update_pricing(weekend_id)
     except Exception as e:
         return jsonify({
             'success': False,
