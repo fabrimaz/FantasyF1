@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import text
-from Service.schedule.pricing_job import update_pricing
-from Service.schedule.scoring_job import run_scoring_job
+from scheduling.pricing_job import update_pricing
+from scheduling.scoring_job import run_scoring_job
 import migration
 from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
@@ -330,7 +330,7 @@ def save_team_result(team_id, gp_id):
 @app.route('/api/processWeekend', methods=['GET'])
 @app.route('/api/processWeekend/<int:weekend_id>', methods=['GET'])
 def get_weekend_points(weekend_id=None):
-    from schedule.scoring_job import run_scoring_job
+    from scheduling.scoring_job import run_scoring_job
     result = 100
     try:
         result = run_scoring_job(weekend_id)
