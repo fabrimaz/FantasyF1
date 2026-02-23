@@ -15,6 +15,7 @@ from .api_data_extraction import get_race
 from models import db, Team, TeamResult, GrandPrix, User
 import json
 
+
 # Punti F1 standard
 FantasyF1_POINTS = {
     1: 50, 2: 36, 3: 30, 4: 24, 5: 20,
@@ -134,43 +135,42 @@ def process_race_results(race_data, gp_id):
 
 def run_scoring_job(weekend_id=None):
     """Main job - eseguito ogni domenica sera"""
-    with app.app_context():
-        print(f"\n{'='*60}")
-        print(f"FANTASY F1 SCORING JOB - {datetime.now().isoformat()} - Weekend ID: {weekend_id if weekend_id else 'LAST'}")
-        print(f"{'='*60}\n")
-        
-        # 1. Ottieni i risultati della gara più recente da Ergast
-        race_data = get_race(weekend_id)
-        if not race_data:
-            message ="❌ Job abortito: nessun dato di gara disponibile"
-            print(message)
-            return message
-        
-        # 2. Trova il GP corrispondente nel nostro DB
-        # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
-        race_date_str = race_data.get('date')
-        gp = GrandPrix.query.filter(
-            GrandPrix.date >= datetime.fromisoformat(race_date_str),
-            GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
-        ).first()
-
-        if weekend_id == 100:
-            gp = GrandPrix.query.filter_by(id=1).first() 
-
-        if not gp:  # Se è un test, non serve trovare il GP
-            message =f"❌ Nessun GP trovato per la data {race_date_str}"
-            print(message)
-            return message
-
-        match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
-        print(match_message)
-        
-        # 3. Processa i risultati e calcola i punteggi
-        process_race_results(race_data, gp.id)
-        
-        message = "✅ Job completato con successo"
+    print(f"\n{'='*60}")
+    print(f"FANTASY F1 SCORING JOB - {datetime.now().isoformat()} - Weekend ID: {weekend_id if weekend_id else 'LAST'}")
+    print(f"{'='*60}\n")
+    
+    # 1. Ottieni i risultati della gara più recente da Ergast
+    race_data = get_race(weekend_id)
+    if not race_data:
+        message ="❌ Job abortito: nessun dato di gara disponibile"
         print(message)
-        return message + ". " + match_message
+        return message
+    
+    # 2. Trova il GP corrispondente nel nostro DB
+    # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
+    race_date_str = race_data.get('date')
+    gp = GrandPrix.query.filter(
+        GrandPrix.date >= datetime.fromisoformat(race_date_str),
+        GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+    ).first()
+
+    if weekend_id == 100:
+        gp = GrandPrix.query.filter_by(id=1).first() 
+
+    if not gp:  # Se è un test, non serve trovare il GP
+        message =f"❌ Nessun GP trovato per la data {race_date_str}"
+        print(message)
+        return message
+
+    match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
+    print(match_message)
+    
+    # 3. Processa i risultati e calcola i punteggi
+    process_race_results(race_data, gp.id)
+    
+    message = "✅ Job completato con successo"
+    print(message)
+    return message + ". " + match_message
 
 if __name__ == '__main__':
     run_scoring_job()
