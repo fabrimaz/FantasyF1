@@ -10,11 +10,9 @@ import sys
 import os
 
 # Aggiungi il parent directory al path per gli import
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from schedule.api_data_extraction import get_race
+from .api_data_extraction import get_race
 from models import db, Team, TeamResult, GrandPrix, User
-from app import app
 import json
 
 # Punti F1 standard
