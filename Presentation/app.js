@@ -526,10 +526,10 @@ async function showLeagueUserTeam(userId) {
     const constrs = team.constructors || [];
     console.log(drivers)
     const html = `
-      <div style="margin-top:30px" class="card">
-        <div style="font-weight:700;margin:12px;padding:5px;">Team</div>
+      <div style="margin-top:30px; padding-left:15px" class="card">
+        <div style="font-weight:700;margin-top:12px;margin-bottom:12px;">Team</div>
         <div class="section-label">Piloti</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding:12px;">
           ${drivers.map(d => `
             <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,0.05);border-radius:6px;border-left:3px solid ${d.color}">
               <span style="font-weight:700">${d.num}</span>
@@ -539,7 +539,7 @@ async function showLeagueUserTeam(userId) {
           `).join('')}
         </div>
         <div class="section-label">Scuderie</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px;">
           ${constrs.map(c => `
             <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(255,255,255,0.05);border-radius:6px;border-left:3px solid ${c.color}">
               <span>${c.name}</span>
