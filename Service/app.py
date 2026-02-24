@@ -331,7 +331,8 @@ def get_weekend_points(weekend_id=None):
         return jsonify({
             'success': False,
             'weekend_id': weekend_id if weekend_id else 'current',
-            'error': str(e)
+            'error': str(e),
+            'stack': str(e.__traceback__)
         }), 500
     
     try:
@@ -340,7 +341,8 @@ def get_weekend_points(weekend_id=None):
         return jsonify({
             'success': False,
             'weekend_id': weekend_id if weekend_id else 'current',
-            'error': str(e)
+            'error': str(e),
+            'stack': str(e.__traceback__)
         }), 500
     
     return jsonify({
