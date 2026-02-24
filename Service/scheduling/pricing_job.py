@@ -1,52 +1,135 @@
-import datetime
-
-from models import Constructor, Driver, GrandPrix
+from copyreg import constructor
+from datetime import datetime
+from models import Constructor, Driver, GrandPrix, Team, DriverPrices, ConstructorPrices
 from .api_data_extraction import get_race
+from factory import db, create_app
 
-def update_pricing(weekend_id):
+def update_pricing(app, weekend_id):
     print(f"Updating pricing for weekend_id: {weekend_id}")
 
-    # race_data = get_race(weekend_id)
-    # if not race_data:
-    #     message ="❌ Job abortito: nessun dato di gara disponibile"
-    #     print(message)
-    #     return message
+    with app.app_context():
+        race_data = get_race(weekend_id)
+        if not race_data:
+            message ="❌ Job abortito: nessun dato di gara disponibile"
+            print(message)
+            return message
+            
+        # 2. Trova il GP corrispondente nel nostro DB
+        # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
+        race_date_str = race_data.get('date')
+        gp = GrandPrix.query.filter(
+            GrandPrix.date >= datetime.fromisoformat(race_date_str),
+            GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+        ).first()
+
+        if weekend_id == 100:
+            gp = GrandPrix.query.filter_by(id=1).first() 
+
+        if not gp:  # Se è un test, non serve trovare il GP
+            message =f"❌ Nessun GP trovato per la data {race_date_str}"
+            print(message)
+            return message
+
+        match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
+        print(match_message)
         
-    # # 2. Trova il GP corrispondente nel nostro DB
-    # # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
-    # race_date_str = race_data.get('date')
-    # gp = GrandPrix.query.filter(
-    #     GrandPrix.date >= datetime.fromisoformat(race_date_str),
-    #     GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
-    # ).first()
+        teams_for_weekend = Team.query.filter_by(gp_id=weekend_id).all()
 
-    # if weekend_id == 100:
-    #     gp = GrandPrix.query.filter_by(id=1).first() 
+        driver_new_prices = update_driver_prices(weekend_id, teams_for_weekend, race_data)
+        constructors_new_prices = update_constructor_prices(weekend_id, teams_for_weekend, race_data)
+        save_new_prices_history_table(weekend_id, driver_new_prices, constructors_new_prices)
+        return {
+            'drivers': driver_new_prices,
+            'constructors': constructors_new_prices
+        }
 
-    # if not gp:  # Se è un test, non serve trovare il GP
-    #     message =f"❌ Nessun GP trovato per la data {race_date_str}"
-    #     print(message)
-    #     return message
-
-    # match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
-    # print(match_message)
+def update_driver_prices(weekend_id, teams_for_weekend, race_data):
     
-    # update_driver_prices(race_data)
-    # update_constructor_prices(weekend_id)
+    print(f"Updating driver prices for weekend_id: {weekend_id}")
+    learning_rate = 0.3
+    total_occurences = 0
 
-def update_driver_prices(race_data):
-    print(f"Updating driver prices")
+    all_drivers = Driver.query.all()
+    drivers_occurrence = {driver.number: 0 for driver in all_drivers}
+    drivers_new_prices = {driver.number: 0 for driver in all_drivers}
+    for team in teams_for_weekend:
+        drivers = team.drivers
+        for driver in drivers:
+            if driver.number in drivers_occurrence:
+                drivers_occurrence[driver.number] += 1
+                total_occurences += 1
 
-    drivers = Driver.query.all()
-    for driver in drivers:
-        print(f"Updating price for driver: {driver.name}")
+    average_occurrence = total_occurences / len(drivers_occurrence)
+    print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
+    for driver in all_drivers:
+        perc_occurence = (average_occurrence - drivers_occurrence[driver.number]) / average_occurrence if average_occurrence > 0 else 0
+        new_price = driver.price + (1 + learning_rate * perc_occurence)
+        drivers_new_prices[driver.number] = new_price
+        print(f"Updating price for driver: {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}, average occurrence: {average_occurrence}")
 
 
+    return drivers_new_prices
 
-def update_constructor_prices(weekend_id):
+def update_constructor_prices(weekend_id, teams_for_weekend, race_data):
     print(f"Updating  constructor prices")
-    constructors = Constructor.query.all()
+    learning_rate = 0.3
+    total_occurences = 0
 
-    for constructor in constructors:
-        print(f"Updating price for constructor: {constructor.name}")
-        
+    all_constructors = Constructor.query.all()
+    constructors_occurrence = {constructor.id: 0 for constructor in all_constructors}
+    constructors_new_prices = {constructor.id: 0 for constructor in all_constructors}
+    for team in teams_for_weekend:
+        constructors = team.constructors
+        for constructor in constructors:
+            if constructor.id in constructors_occurrence:
+                constructors_occurrence[constructor.id] += 1
+                total_occurences += 1
+
+    average_occurrence = total_occurences / len(constructors_occurrence)
+    print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
+    for constructor in all_constructors:
+        perc_occurence = (average_occurrence - constructors_occurrence[constructor.id]) / average_occurrence if average_occurrence > 0 else 0
+        new_price = constructor.price + (1 + learning_rate * perc_occurence)
+        constructors_new_prices[constructor.id] = new_price
+        print(f"Updating price for constructor: {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}, average occurrence: {average_occurrence}")
+
+
+    return constructors_new_prices
+
+def save_new_prices_default_table(drivers_new_prices, constructors_new_prices):
+    for driver_num, new_price in drivers_new_prices.items():
+        driver = Driver.query.filter_by(number=driver_num).first()
+        if driver:
+            driver.price = new_price
+            print(f"Updated price for driver {driver.name} to {new_price}")
+    
+    for constructor_id, new_price in constructors_new_prices.items():
+        constructor = Constructor.query.filter_by(id=constructor_id).first()
+        if constructor:
+            constructor.price = new_price
+            print(f"Updated price for constructor {constructor.name} to {new_price}")
+    
+    db.session.commit()
+
+def save_new_prices_history_table(weekend_id, drivers_new_prices, constructors_new_prices):
+    for driver_num, new_price in drivers_new_prices.items():
+        driver_price = DriverPrices(
+            driver_id=driver_num,
+            price=new_price,
+            gp_id=weekend_id
+        )
+        db.session.add(driver_price)
+    
+    for constructor_id, new_price in constructors_new_prices.items():
+        constructor_price = ConstructorPrices(
+            constructor_id=constructor_id,
+            price=new_price,
+            gp_id=weekend_id
+        )
+        db.session.add(constructor_price)
+    
+    db.session.commit()
+
+
+if __name__ == '__main__':
+    update_pricing()

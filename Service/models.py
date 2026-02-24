@@ -80,7 +80,7 @@ class GrandPrix(db.Model):
 class Driver(db.Model):
     __tablename__ = 'drivers'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)  # Use my ID as primary key
     number = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     team = db.Column(db.String(120), nullable=False)
@@ -241,3 +241,40 @@ class GameState(db.Model):
             db.session.add(gs)
             db.session.commit()
         return gs.current_date
+    
+class DriverPrices(db.Model):
+    __tablename__ = 'driver_prices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    driver_id = db.Column(db.Integer, db.ForeignKey('drivers.id'), nullable=False)
+    gp_id = db.Column(db.Integer, db.ForeignKey('grand_prix.id'), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    computed_on = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'driver_id': self.driver_id,
+            'gp_id': self.gp_id,
+            'price': self.price,
+            'computed_on': self.computed_on.isoformat()
+        }
+    
+class ConstructorPrices(db.Model):
+    __tablename__ = 'constructor_prices'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    constructor_id = db.Column(db.Integer, db.ForeignKey('constructors.id'), nullable=False)
+    gp_id = db.Column(db.Integer, db.ForeignKey('grand_prix.id'), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    computed_on = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'constructor_id': self.constructor_id,
+            'gp_id': self.gp_id,
+            'price': self.price,
+            'computed_on': self.computed_on.isoformat()
+        }
+    

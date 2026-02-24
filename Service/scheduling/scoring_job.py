@@ -9,11 +9,12 @@ import sys
 
 import os
 
+
 # Aggiungi il parent directory al path per gli import
 
 from .api_data_extraction import get_race
-from models import db, Team, TeamResult, GrandPrix, User
-import json
+from models import Team, TeamResult, GrandPrix
+from factory import db, create_app
 
 
 # Punti F1 standard
@@ -22,22 +23,23 @@ FantasyF1_POINTS = {
     6: 16, 7: 12, 8: 8, 9: 4, 10: 2,
     11:1, 12: 1, 13: 0, 14: 0, 15: 0, 
     16: 0, 17: 0, 18: 0, 19: 0, 20: 0,
-    -10: -10,  # Ritiro
-    -1: -1    # Non partito (W)
+    -10: -25,  # Ritiro
+    -1: -30    # Non partito (W)
 }
 
 # Mapping scuderia -> ID nel nostro DB
 CONSTRUCTOR_MAPPING = {
     'red_bull': 1,
-    'ferrari': 2,
-    'mclaren': 3,
+    'mclaren': 2,
+    'ferrari': 3,
     'mercedes': 4,
     'aston_martin': 5,
-    'alpine': 6,
-    'williams': 7,
-    'rb': 8,
+    'williams': 6,
+    'audi' : 7,
+    'cadillac': 8,
     'haas': 9,
-    'sauber': 10,
+    'alpine': 10,
+    'rb': 11,
 }
 
 def calculate_team_score(drivers, constructors, race_results):
@@ -81,7 +83,8 @@ def calculate_team_score(drivers, constructors, race_results):
     for driver in drivers:
         position = results_by_number.get(driver['num'], 0)
         points = FantasyF1_POINTS.get(position, 0)
-        total_score += points
+        driver_point_adj = points if points > 0 else 0
+        total_score += driver_point_adj
         print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
 
     print(constructors)
@@ -90,7 +93,7 @@ def calculate_team_score(drivers, constructors, race_results):
             position_values = driver_and_constructor.get(constructor['id'], [])
             print(position_values)
             for position in position_values:
-                points = FantasyF1_POINTS.get(position, 0) / 2
+                points = FantasyF1_POINTS.get(position, 0)
                 print(f"  🏁 Costruttore {constructor['name']} points {points} (position {position})")
                 total_score += points
 
@@ -133,44 +136,45 @@ def process_race_results(race_data, gp_id):
     db.session.commit()
     print("Punteggi salvati nel database")
 
-def run_scoring_job(weekend_id=None):
+def run_scoring_job(app, weekend_id=None):
     """Main job - eseguito ogni domenica sera"""
     print(f"\n{'='*60}")
     print(f"FANTASY F1 SCORING JOB - {datetime.now().isoformat()} - Weekend ID: {weekend_id if weekend_id else 'LAST'}")
     print(f"{'='*60}\n")
-    
-    # 1. Ottieni i risultati della gara più recente da Ergast
-    race_data = get_race(weekend_id)
-    if not race_data:
-        message ="❌ Job abortito: nessun dato di gara disponibile"
+
+    with app.app_context():
+        # 1. Ottieni i risultati della gara più recente da Ergast
+        race_data = get_race(weekend_id)
+        if not race_data:
+            message ="❌ Job abortito: nessun dato di gara disponibile"
+            print(message)
+            return message
+        
+        # 2. Trova il GP corrispondente nel nostro DB
+        # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
+        race_date_str = race_data.get('date')
+        gp = GrandPrix.query.filter(
+            GrandPrix.date >= datetime.fromisoformat(race_date_str),
+            GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+        ).first()
+
+        if weekend_id == 100:
+            gp = GrandPrix.query.filter_by(id=1).first() 
+
+        if not gp:  # Se è un test, non serve trovare il GP
+            message =f"❌ Nessun GP trovato per la data {race_date_str}"
+            print(message)
+            return message
+
+        match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
+        print(match_message)
+        
+        # 3. Processa i risultati e calcola i punteggi
+        process_race_results(race_data, gp.id)
+        
+        message = "✅ Job completato con successo"
         print(message)
-        return message
-    
-    # 2. Trova il GP corrispondente nel nostro DB
-    # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
-    race_date_str = race_data.get('date')
-    gp = GrandPrix.query.filter(
-        GrandPrix.date >= datetime.fromisoformat(race_date_str),
-        GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
-    ).first()
-
-    if weekend_id == 100:
-        gp = GrandPrix.query.filter_by(id=1).first() 
-
-    if not gp:  # Se è un test, non serve trovare il GP
-        message =f"❌ Nessun GP trovato per la data {race_date_str}"
-        print(message)
-        return message
-
-    match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
-    print(match_message)
-    
-    # 3. Processa i risultati e calcola i punteggi
-    process_race_results(race_data, gp.id)
-    
-    message = "✅ Job completato con successo"
-    print(message)
-    return message + ". " + match_message
+        return message + ". " + match_message
 
 if __name__ == '__main__':
     run_scoring_job()

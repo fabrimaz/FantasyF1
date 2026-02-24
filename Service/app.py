@@ -11,15 +11,9 @@ from sendgrid.helpers.mail import Mail
 from auth import generate_token
 import os
 
-app = Flask(__name__)
 
-# Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or 'sqlite:///fantasy_f1.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JSON_SORT_KEYS'] = False
-
-# Initialize extensions
-db.init_app(app)
+from factory import create_app
+app = create_app()
 CORS(app)
 
 # Create database tables
@@ -330,10 +324,9 @@ def save_team_result(team_id, gp_id):
 @app.route('/api/processWeekend', methods=['GET'])
 @app.route('/api/processWeekend/<int:weekend_id>', methods=['GET'])
 def get_weekend_points(weekend_id=None):
-    from scheduling.scoring_job import run_scoring_job
     result = 100
     try:
-        result = run_scoring_job(weekend_id)
+        resultScoring = run_scoring_job(app, weekend_id)
     except Exception as e:
         return jsonify({
             'success': False,
@@ -342,7 +335,7 @@ def get_weekend_points(weekend_id=None):
         }), 500
     
     try:
-        result = update_pricing(weekend_id)
+        resultPricing = update_pricing(app, weekend_id)
     except Exception as e:
         return jsonify({
             'success': False,
@@ -353,7 +346,10 @@ def get_weekend_points(weekend_id=None):
     return jsonify({
         'success': True,
         'weekend_id': weekend_id if weekend_id else 'current',
-        'result': result
+        'result': {
+            'scoring': resultScoring,
+            'pricing': resultPricing
+        }
     }), 200
 
 # ============ REFERENCE DATA ============

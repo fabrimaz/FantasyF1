@@ -13,7 +13,7 @@ def get_race(weekend_id=None):
 
         response = requests.get(url, timeout=10)
         data = response.json()
-        print(data)  # Debug: mostra la risposta completa
+        #print(data)  # Debug: mostra la risposta completa
         
         if 'MRData' not in data or 'RaceTable' not in data['MRData']:
             print("❌ Nessuna gara trovata su Ergast API")
