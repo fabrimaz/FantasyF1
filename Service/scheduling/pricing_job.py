@@ -54,10 +54,12 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
     drivers_occurrence = {driver.number: 0 for driver in all_drivers}
     drivers_new_prices = {driver.number: 0 for driver in all_drivers}
     for team in teams_for_weekend:
-        drivers = team.drivers
+        drivers = team.get_drivers()
+        print(drivers)
         for driver in drivers:
-            if driver.number in drivers_occurrence:
-                drivers_occurrence[driver.number] += 1
+            driver_number = driver['num']
+            if driver_number in drivers_occurrence:
+                drivers_occurrence[driver_number] += 1
                 total_occurences += 1
 
     average_occurrence = total_occurences / len(drivers_occurrence) if len(drivers_occurrence) > 0 else 0
@@ -67,24 +69,26 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
         new_price = driver.price * (1 + learning_rate * perc_occurence)
         tot_perc_occ += perc_occurence
         drivers_new_prices[driver.number] = new_price
-        print(f"Updating price for driver: {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}, average occurrence: {average_occurrence}")
+        print(f"- {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}")
 
     print(f"Total percentage occurrence: {tot_perc_occ}")
     return drivers_new_prices
 
 def update_constructor_prices(gp_id, teams_for_weekend, race_data):
     print(f"Updating  constructor prices for gp_id: {gp_id}")
-    learning_rate = 0.3
+    learning_rate = 0.1
     total_occurences = 0
 
     all_constructors = Constructor.query.all()
     constructors_occurrence = {constructor.id: 0 for constructor in all_constructors}
     constructors_new_prices = {constructor.id: 0 for constructor in all_constructors}
     for team in teams_for_weekend:
-        constructors = team.constructors
+        constructors = team.get_constructors()
+        print(constructors)
         for constructor in constructors:
-            if constructor.id in constructors_occurrence:
-                constructors_occurrence[constructor.id] += 1
+            constructor_id = constructor['id']
+            if constructor_id in constructors_occurrence:
+                constructors_occurrence[constructor_id] += 1
                 total_occurences += 1
 
     average_occurrence = total_occurences / len(constructors_occurrence) if len(constructors_occurrence) > 0 else 0
@@ -93,8 +97,7 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
         perc_occurence = (average_occurrence - constructors_occurrence[constructor.id]) / average_occurrence if average_occurrence > 0 else 0
         new_price = constructor.price * (1 + learning_rate * perc_occurence)
         constructors_new_prices[constructor.id] = new_price
-        print(f"Updating price for constructor: {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}, average occurrence: {average_occurrence}")
-
+        print(f"- {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}")
 
     return constructors_new_prices
 

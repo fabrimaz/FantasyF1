@@ -92,6 +92,7 @@ class Driver(db.Model):
         return {
             'id': self.id,
             'num': self.number,
+            'number': self.number,
             'name': self.name,
             'team': self.team,
             'price': self.price,
