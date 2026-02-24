@@ -48,6 +48,7 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
     print(f"Updating driver prices for weekend_id: {gp_id}")
     learning_rate = 0.3
     total_occurences = 0
+    tot_perc_occ = 0
 
     all_drivers = Driver.query.all()
     drivers_occurrence = {driver.number: 0 for driver in all_drivers}
