@@ -75,3 +75,8 @@ curl -X POST http://localhost:5000/api/team/1 \
 ## Database
 
 Il database SQLite è automaticamente creato al primo avvio in `fantasy_f1.db`.
+
+## Deploy
+- DB: Supabase
+- Backend: Render (Db connection is env vars)
+- Frontend: Github (backend connection in files)

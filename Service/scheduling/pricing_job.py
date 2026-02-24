@@ -59,15 +59,16 @@ def update_driver_prices(weekend_id, teams_for_weekend, race_data):
                 drivers_occurrence[driver.number] += 1
                 total_occurences += 1
 
-    average_occurrence = total_occurences / len(drivers_occurrence)
+    average_occurrence = total_occurences / len(drivers_occurrence) if len(drivers_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for driver in all_drivers:
         perc_occurence = (average_occurrence - drivers_occurrence[driver.number]) / average_occurrence if average_occurrence > 0 else 0
-        new_price = driver.price + (1 + learning_rate * perc_occurence)
+        new_price = driver.price * (1 + learning_rate * perc_occurence)
+        tot_perc_occ += perc_occurence
         drivers_new_prices[driver.number] = new_price
         print(f"Updating price for driver: {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}, average occurrence: {average_occurrence}")
 
-
+    print(f"Total percentage occurrence: {tot_perc_occ}")
     return drivers_new_prices
 
 def update_constructor_prices(weekend_id, teams_for_weekend, race_data):
@@ -85,11 +86,11 @@ def update_constructor_prices(weekend_id, teams_for_weekend, race_data):
                 constructors_occurrence[constructor.id] += 1
                 total_occurences += 1
 
-    average_occurrence = total_occurences / len(constructors_occurrence)
+    average_occurrence = total_occurences / len(constructors_occurrence) if len(constructors_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for constructor in all_constructors:
         perc_occurence = (average_occurrence - constructors_occurrence[constructor.id]) / average_occurrence if average_occurrence > 0 else 0
-        new_price = constructor.price + (1 + learning_rate * perc_occurence)
+        new_price = constructor.price * (1 + learning_rate * perc_occurence)
         constructors_new_prices[constructor.id] = new_price
         print(f"Updating price for constructor: {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}, average occurrence: {average_occurrence}")
 
