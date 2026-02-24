@@ -33,19 +33,19 @@ def update_pricing(app, weekend_id):
         match_message = f"🎯 Matched GP: {gp.name} (ID {gp.id})"
         print(match_message)
         
-        teams_for_weekend = Team.query.filter_by(gp_id=weekend_id).all()
+        teams_for_weekend = Team.query.filter_by(gp_id=gp.id).all()
 
-        driver_new_prices = update_driver_prices(weekend_id, teams_for_weekend, race_data)
-        constructors_new_prices = update_constructor_prices(weekend_id, teams_for_weekend, race_data)
-        save_new_prices_history_table(weekend_id, driver_new_prices, constructors_new_prices)
+        driver_new_prices = update_driver_prices(gp.id, teams_for_weekend, race_data)
+        constructors_new_prices = update_constructor_prices(gp.id, teams_for_weekend, race_data)
+        save_new_prices_history_table(gp.id, driver_new_prices, constructors_new_prices)
         return {
             'drivers': driver_new_prices,
             'constructors': constructors_new_prices
         }
 
-def update_driver_prices(weekend_id, teams_for_weekend, race_data):
+def update_driver_prices(gp_id, teams_for_weekend, race_data):
     
-    print(f"Updating driver prices for weekend_id: {weekend_id}")
+    print(f"Updating driver prices for weekend_id: {gp_id}")
     learning_rate = 0.3
     total_occurences = 0
 
@@ -71,8 +71,8 @@ def update_driver_prices(weekend_id, teams_for_weekend, race_data):
     print(f"Total percentage occurrence: {tot_perc_occ}")
     return drivers_new_prices
 
-def update_constructor_prices(weekend_id, teams_for_weekend, race_data):
-    print(f"Updating  constructor prices")
+def update_constructor_prices(gp_id, teams_for_weekend, race_data):
+    print(f"Updating  constructor prices for gp_id: {gp_id}")
     learning_rate = 0.3
     total_occurences = 0
 
@@ -112,12 +112,12 @@ def save_new_prices_default_table(drivers_new_prices, constructors_new_prices):
     
     db.session.commit()
 
-def save_new_prices_history_table(weekend_id, drivers_new_prices, constructors_new_prices):
+def save_new_prices_history_table(gp_id, drivers_new_prices, constructors_new_prices):
     for driver_num, new_price in drivers_new_prices.items():
         driver_price = DriverPrices(
             driver_id=driver_num,
             price=new_price,
-            gp_id=weekend_id
+            gp_id=gp_id
         )
         db.session.add(driver_price)
     
@@ -125,7 +125,7 @@ def save_new_prices_history_table(weekend_id, drivers_new_prices, constructors_n
         constructor_price = ConstructorPrices(
             constructor_id=constructor_id,
             price=new_price,
-            gp_id=weekend_id
+            gp_id=gp_id
         )
         db.session.add(constructor_price)
     
