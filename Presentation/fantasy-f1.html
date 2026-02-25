@@ -16,6 +16,7 @@
     <button class="nav-tab" id="nav-admin-tab" onclick="goTo('admin')" style="display:none">Gestione</button>
   </div>
   <div class="nav-right">
+    <button class="rules-btn" title="Rules" onclick="showRules()">i</button>
     <span class="nav-user" id="nav-username"></span>
     <button class="btn-logout" onclick="logout()">Esci</button>
   </div>
@@ -150,6 +151,16 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- RULES PANEL -->
+<div id="screen-rules" class="screen">
+  <div class="information-container">
+      <div class="nav-logo">FANTASY <span>F1</span></div>
+      <ul id="rules-list" class="rules-list"></ul>
+      <div id="points-table-container"></div>
+      <button  class="btn btn-primary btn-full" onclick="goTo('team')">Back to the Team</button>
+  </div>
 </div>
 
 <!-- ADMIN PANEL -->

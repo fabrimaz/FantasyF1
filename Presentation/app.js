@@ -119,6 +119,11 @@ function goTo(screen) {
   showScreen(screen); 
   if(screen === 'leagues') renderLeagues();
   if(screen === 'admin') renderAdmin();
+  if(screen === 'rules') renderRulesScreen();
+}
+
+function showRules() {
+  goTo('rules');
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -660,4 +665,67 @@ async function resetGameDate() {
   } catch(e) {
     showToast('Errore: ' + e.message, false);
   }
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// RULES PANEL
+// ────────────────────────────────────────────────────────────────────────
+
+const GAME_RULES = [
+  "A team is made up of 5 drivers and 2 constructors.",
+  "The total budget for each team is $100M.",
+  "Qualification locks the team for that GP - no changes allowed after lock.",
+  "The constructors points are the sum of their two drivers points.",
+  "A DNF or DNS for a driver in your constructors mean -25 for that driver.",
+  "A DNF for a driver in your team means -5 points for that driver.",
+  "Prices will move dinammically based on performance and demand.",
+  "Points are awarded based on real performance in the GP according to the following table:",
+];
+
+const POSITION_POINTS = [
+  { position: "P1", points: 50 },
+  { position: "P2", points: 36 },
+  { position: "P3", points: 30 },
+  { position: "P4", points: 24 },
+  { position: "P5", points: 20 },
+  { position: "P6", points: 16 },
+  { position: "P7", points: 12 },
+  { position: "P8", points: 8 },
+  { position: "P9", points: 4 },
+  { position: "P10", points: 2 },
+  { position: "P10", points: 1 },
+];
+
+// Mostra le regole nella schermata
+function renderRulesScreen() {
+  const list = document.getElementById("rules-list");
+  list.innerHTML = GAME_RULES.map(rule =>
+    `<li class="rule-item">${rule}</li>`
+  ).join("");
+
+  renderPointsTable();
+}
+
+
+function renderPointsTable() {
+  const container = document.getElementById("points-table-container");
+
+  container.innerHTML = `
+    <table class="points-table">
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${POSITION_POINTS.map(p => `
+          <tr>
+            <td>${p.position}</td>
+            <td>${p.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }

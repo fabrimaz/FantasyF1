@@ -233,6 +233,26 @@ main { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
 .pod-name { font-size: 13px; font-weight: 700; margin-top: 6px; }
 .pod-team { font-size: 11px; color: var(--muted); }
 .pod-pts { font-size: 20px; font-weight: 900; margin-top: 8px; }
+.rules-btn {  background: none; border: 1px solid #4d0402; color: #e10600;
+  border-radius: 50%; width: 28px; height: 28px; font-size: 16px;
+  cursor: pointer; font-weight: bold; line-height: 1;
+}
+.rules-list {
+  margin-top: 15px;
+  list-style-type: none;
+  padding: 2px;
+}
+.rule-title {
+  margin:10px;
+  margin-bottom: 20px;
+  color: var(--red);
+  font-size: 21px; 
+  font-weight: 800; 
+  letter-spacing: 1px;
+}
+.rule-item { margin-left: 5px; margin-bottom: 10px; font-size: 13px; color: var(--text); }
+.information-container { max-width: 600px; margin: 40px auto; margin-bottom: 60px; padding: 30px; background: var(--dark2); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
+
 
 .lb-table { width: 100%; border-collapse: collapse; }
 .lb-table th {
@@ -262,4 +282,29 @@ main { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
 @media(max-width:600px) {
   main { padding: 20px 16px; }
   nav { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+}
+
+.points-table {
+  width: 80%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  vertical-align: middle;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.points-table th {
+  border: 1px solid #141313;
+  color: #141313;
+  padding: 6px;
+  text-align: center;
+  background-color: #f5f5f5;
+  height: 20px;
+}
+.points-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: center;
 }

@@ -321,7 +321,6 @@ def save_team_result(team_id, gp_id):
 
 # ============ JOB SCHEDULE ============
 
-@app.route('/api/processWeekend', methods=['GET'])
 @app.route('/api/processWeekend/<int:weekend_id>', methods=['GET'])
 def get_weekend_points(weekend_id=None):
     result = 100
@@ -351,6 +350,10 @@ def get_weekend_points(weekend_id=None):
             'pricing': resultPricing
         }
     }), 200
+
+@app.route('/api/processWeekend', methods=['GET'])
+def get_current_weekend_points():
+    return get_weekend_points(None)
 
 # ============ REFERENCE DATA ============
 
