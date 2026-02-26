@@ -4,7 +4,7 @@ from sqlalchemy import text
 from scheduling.pricing_job import update_pricing
 from scheduling.scoring_job import run_scoring_job
 import migration
-from models import db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
+from models import ConstructorPrices, DriverPrices, db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -360,13 +360,70 @@ def get_current_weekend_points():
 @app.route('/api/drivers', methods=['GET'])
 def get_drivers():
     drivers = Driver.query.all()
-    return jsonify([driver.to_dict() for driver in drivers]), 200
+    driver_prices_list = get_driver_prices()
+    list_of_drivers_dict = [driver.to_dict() for driver in drivers]
+
+    for driver_dict in list_of_drivers_dict:
+        driver_prices = driver_prices_list.get(driver_dict['number'])
+        driver_prices = sorted(driver_prices, key=lambda dp: dp.gp_id, reverse=True) if driver_prices else []
+        driver_dict['price_history'] = [dp.to_dict() for dp in driver_prices] if driver_prices else None
+        driver_dict['price'] = driver_prices[0].to_dict().get('price', driver_dict['price']) if driver_prices else driver_dict['price']
+
+    return jsonify(list_of_drivers_dict), 200
 
 @app.route('/api/constructors', methods=['GET'])
 def get_constructors():
     constructors = Constructor.query.all()
-    return jsonify([constructor.to_dict() for constructor in constructors]), 200
+    constructor_price_list = get_constructor_prices()
+    list_of_constructors_dict = [constructor.to_dict() for constructor in constructors]
 
+    for constructor_dict in list_of_constructors_dict:
+        constructor_prices = constructor_price_list.get(constructor_dict['id'])
+        constructor_prices = sorted(constructor_prices, key=lambda cp: cp.gp_id, reverse=True) if constructor_prices else []
+        constructor_dict['price_history'] = constructor_prices if constructor_prices else None
+        constructor_dict['price'] = constructor_prices[0].price if constructor_prices else constructor_dict['price']
+        
+    return jsonify(list_of_constructors_dict), 200
+
+def get_driver_prices():
+    driver_prices_dict = dict()
+    driver_prices = DriverPrices.query.order_by(DriverPrices.gp_id.desc()).all()
+
+    for driver_price in driver_prices:
+        if driver_price.driver_id not in driver_prices_dict:
+            driver_prices_dict[driver_price.driver_id] = []
+        
+        price_entry = PriceEntry()
+        price_entry.gp_id = driver_price.gp_id
+        price_entry.price = driver_price.price
+        driver_prices_dict[driver_price.driver_id].append(price_entry)
+
+    return driver_prices_dict
+
+def get_constructor_prices():
+    constructor_prices_dict = dict()
+    constructor_prices = ConstructorPrices.query.order_by(ConstructorPrices.gp_id.desc()).all()
+
+    for constructor_price in constructor_prices:
+        if constructor_price.constructor_id not in constructor_prices_dict:
+            constructor_prices_dict[constructor_price.constructor_id] = []
+
+        price_entry = PriceEntry()
+        price_entry.gp_id = constructor_price.gp_id
+        price_entry.price = constructor_price.price
+        constructor_prices_dict[constructor_price.constructor_id].append(price_entry)
+
+    return constructor_prices_dict
+
+class PriceEntry(object):
+    gp_id = 0
+    price = 0
+
+    def to_dict(self):
+        return {
+            'gp_id': self.gp_id,
+            'price': self.price
+        }
 # ============ ADMIN ENDPOINTS ============
 
 @app.route('/api/game/state', methods=['GET'])

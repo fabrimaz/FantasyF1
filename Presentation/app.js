@@ -269,7 +269,14 @@ async function loadTeamForGP() {
 function renderDriverGrid() {
   console.log('renderDriverGrid - DRIVERS:', DRIVERS.length, 'selDrivers:', selDrivers.length, 'budget left:', calcRem());
   
-  $('drivers-grid').innerHTML = DRIVERS.map(d => {
+  drivers_by_gp = DRIVERS.map(d => 
+    {
+      d.current_price = d.price_history ? 
+        d.price_history.find(ph => ph.gp_id === selectedGP.id -1)?.price || d.price : d.price;
+      return d;
+    })
+    
+  $('drivers-grid').innerHTML = drivers_by_gp.map(d => {
     const isSelected = !!selDrivers.find(x => x.id === d.id);
     const toDeselect = !isSelected && (selDrivers.length >= 5 || calcRem() - d.price < 0);
     console.log(`Driver ${d.name} - sel: ${isSelected}, dis: ${toDeselect}`);
@@ -281,7 +288,7 @@ function renderDriverGrid() {
       <div class="driver-name">${d.name}</div>
       <div class="driver-team"><span class="team-dot" style="background:${d.color}"></span>${d.team}</div>
       <div class="driver-bottom">
-        <div class="driver-price">$${d.price}M</div>
+        <div class="driver-price">$${d.current_price}M</div>
         <div class="driver-pts">${d.pts} pts</div>
       </div>
     </div>`;
@@ -289,7 +296,15 @@ function renderDriverGrid() {
 }
 
 function renderConstrGrid() {
-  $('constructors-grid').innerHTML = CONSTRUCTORS.map(c => {
+    
+  constructors_by_gp = CONSTRUCTORS.map(d => 
+    {
+      d.current_price = d.price_history ? 
+        d.price_history.find(ph => ph.gp_id === selectedGP.id -1)?.price || d.price : d.price;
+      return d;
+    })
+
+  $('constructors-grid').innerHTML = constructors_by_gp.map(c => {
     const sel = !!selConstrs.find(x => x.id === c.id);
     const dis = !sel && (selConstrs.length >= 2 || calcRem() - c.price < 0);
     return `<div class="sel-card${sel ? ' sel-active' : ''}${dis ? ' sel-disabled' : ''}"
@@ -303,7 +318,7 @@ function renderConstrGrid() {
           <div class="driver-pts">${c.pts} pts</div>
         </div>
       </div>
-      <div class="driver-price" style="margin-top:10px">$${c.price}M</div>
+      <div class="driver-price" style="margin-top:10px">$${c.current_price}M</div>
     </div>`;
   }).join('');
 }
@@ -672,13 +687,13 @@ async function resetGameDate() {
 // ────────────────────────────────────────────────────────────────────────
 
 const GAME_RULES = [
-  "A team is made up of 5 drivers and 2 constructors.",
+  "Pick a team of 5 drivers and 2 constructors.",
   "The total budget for each team is $100M.",
-  "Qualification locks the team for that GP - no changes allowed after lock.",
-  "The constructors points are the sum of their two drivers points.",
-  "A DNF or DNS for a driver in your constructors mean -25 for that driver.",
+  "Constructors scores the sum of their two drivers points.",
+  "A DNF or DNS for a driver in your constructors scors -25.",
   "A DNF for a driver in your team means -5 points for that driver.",
   "Prices will move dinammically based on performance and demand.",
+  "Qualification locks the team for that GP - no changes allowed after lock.",
   "Points are awarded based on real performance in the GP according to the following table:",
 ];
 
@@ -693,7 +708,7 @@ const POSITION_POINTS = [
   { position: "P8", points: 8 },
   { position: "P9", points: 4 },
   { position: "P10", points: 2 },
-  { position: "P10", points: 1 },
+  { position: "P11", points: 1 },
 ];
 
 // Mostra le regole nella schermata
