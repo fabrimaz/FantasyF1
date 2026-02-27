@@ -68,7 +68,7 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
         adjusted_price = driver.price * (1 + learning_rate * perc_occurence)
         print(adjusted_price)
         new_price = 0.7 * driver.price + 0.3 * adjusted_price
-        drivers_new_prices[driver.number] = new_price
+        drivers_new_prices[driver.number] = round(new_price, 1)
         print(f"- {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}")
 
     return drivers_new_prices
@@ -96,7 +96,7 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
         perc_occurence = (constructors_occurrence[constructor.id] - average_occurrence) / average_occurrence if average_occurrence > 0 else 0
         adjusted_price = constructor.price * (1 + learning_rate * perc_occurence)
         new_price = 0.7 * constructor.price + 0.3 * adjusted_price
-        constructors_new_prices[constructor.id] = new_price
+        constructors_new_prices[constructor.id] = round(new_price, 1)
         print(f"- {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}")
 
     return constructors_new_prices
