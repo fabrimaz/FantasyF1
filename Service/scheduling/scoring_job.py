@@ -5,13 +5,6 @@ Schedulato per girare ogni domenica sera dopo il GP o chiamata da API
 """
 
 from datetime import datetime
-import sys
-
-import os
-
-
-# Aggiungi il parent directory al path per gli import
-
 from .api_data_extraction import get_race
 from models import Team, TeamResult, GrandPrix
 from factory import db, create_app
@@ -24,7 +17,7 @@ FantasyF1_POINTS = {
     11:1, 12: 1, 13: 0, 14: 0, 15: 0, 
     16: 0, 17: 0, 18: 0, 19: 0, 20: 0,
     -10: -25,  # Ritiro
-    -1: -30    # Non partito (W)
+    -1: -25    # Non partito (W)
 }
 
 # Mapping scuderia -> ID nel nostro DB
@@ -54,6 +47,7 @@ def calculate_team_score(drivers, constructors, race_results):
         int: punteggio totale del team
     """
     total_score = 0
+    fast_lap_driver_id = None
     # Crea un dict <pilota, posizione> 
     results_by_number = {}
     driver_and_constructor = {}
@@ -61,6 +55,7 @@ def calculate_team_score(drivers, constructors, race_results):
         position = result.get('position')
         position_text = result.get('positionText')
         driver_num = int(result['Driver']['permanentNumber'])
+        is_driver_with_fatest_lap = result.get('FastestLap', {}).get('rank') == '1'
         constructor_name = result['Constructor']['constructorId']
         print(f"  🏁 Risultato: Driver #{driver_num} ({constructor_name}) - posizione {position} (text: {position_text})")
         constructor_id = CONSTRUCTOR_MAPPING.get(constructor_name, -1)
@@ -77,17 +72,22 @@ def calculate_team_score(drivers, constructors, race_results):
         position_list = driver_and_constructor.get(constructor_id, [])
         position_list.append(position_value)
         driver_and_constructor[constructor_id] = position_list
+        fast_lap_driver_id = driver_num if is_driver_with_fatest_lap else fast_lap_driver_id
 
-    print()
     # Punteggi driver
     for driver in drivers:
-        position = results_by_number.get(driver['num'], 0)
+        driver_id = driver['id']
+        position = results_by_number.get(driver_id, 0)
         points = FantasyF1_POINTS.get(position, 0)
-        driver_point_adj = points if points > 0 else 0
+        driver_point_adj = points if points > 0 else -5
         total_score += driver_point_adj
+
+        if driver_id == fast_lap_driver_id:
+            print(f"  🏁 Driver #{driver_id} has the fastest lap! +5 pts")
+            total_score += 25
+            
         print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
 
-    print(constructors)
     # Punteggi costruttori (esempio semplificato: +10 se il costruttore ha un driver in top 10)
     for constructor in constructors:    
             position_values = driver_and_constructor.get(constructor['id'], [])
