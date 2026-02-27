@@ -48,7 +48,6 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
     print(f"Updating driver prices for weekend_id: {gp_id}")
     learning_rate = 0.1
     total_occurences = 0
-    total_driver_price = 0
 
     all_drivers = Driver.query.all()
     drivers_occurrence = {driver.number: 0 for driver in all_drivers}
@@ -61,7 +60,6 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
             if driver_number in drivers_occurrence:
                 drivers_occurrence[driver_number] += 1
                 total_occurences += 1
-                total_driver_price = total_driver_price + driver['price']
 
     average_occurrence = total_occurences / len(drivers_occurrence) if len(drivers_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
@@ -79,7 +77,6 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
     print(f"Updating  constructor prices for gp_id: {gp_id}")
     learning_rate = 0.1
     total_occurences = 0
-    total_constructor_price = 0
 
     all_constructors = Constructor.query.all()
     constructors_occurrence = {constructor.id: 0 for constructor in all_constructors}
@@ -128,7 +125,7 @@ def save_new_prices_history_table(gp_id, drivers_new_prices, constructors_new_pr
                 driver_id=driver_num,
                 price=new_price,
                 gp_id=gp_id)
-        db.session.add(driver_price)
+            db.session.add(driver_price)
     
     result = ConstructorPrices.query.filter_by(gp_id=gp_id).first()
     if not result:
@@ -137,7 +134,7 @@ def save_new_prices_history_table(gp_id, drivers_new_prices, constructors_new_pr
                 constructor_id=constructor_id,
                 price=new_price,
                 gp_id=gp_id)
-        db.session.add(constructor_price)
+            db.session.add(constructor_price)
     
     db.session.commit()
 
