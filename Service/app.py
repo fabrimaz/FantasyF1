@@ -118,9 +118,10 @@ def verify_otp():
     }), 200
 
 def send_login_email(to_email, username):
+    print("sending email...")
     sender = "fantasyf1.poleposition@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")
-    code = random.randint(1000, 9999) 
+    code = random.randint(100000, 999999) 
 
     msg = MIMEMultipart()
     msg["From"] = sender
