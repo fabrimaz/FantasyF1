@@ -1,6 +1,6 @@
 from copyreg import constructor
 from datetime import datetime
-from models import Constructor, Driver, GrandPrix, Team, DriverPrices, ConstructorPrices
+from models import Constructor, Driver, GrandPrix, Team, DriverPrices, ConstructorPrices, TeamResult
 from .api_data_extraction import get_race
 from factory import db, create_app
 
@@ -120,20 +120,23 @@ def save_new_prices_default_table(drivers_new_prices, constructors_new_prices):
     db.session.commit()
 
 def save_new_prices_history_table(gp_id, drivers_new_prices, constructors_new_prices):
-    for driver_num, new_price in drivers_new_prices.items():
-        driver_price = DriverPrices(
-            driver_id=driver_num,
-            price=new_price,
-            gp_id=gp_id
-        )
+    
+    result = DriverPrices.query.filter_by(gp_id=gp_id).first()
+    if not result:
+        for driver_num, new_price in drivers_new_prices.items():
+            driver_price = DriverPrices(
+                driver_id=driver_num,
+                price=new_price,
+                gp_id=gp_id)
         db.session.add(driver_price)
     
-    for constructor_id, new_price in constructors_new_prices.items():
-        constructor_price = ConstructorPrices(
-            constructor_id=constructor_id,
-            price=new_price,
-            gp_id=gp_id
-        )
+    result = ConstructorPrices.query.filter_by(gp_id=gp_id).first()
+    if not result:
+        for constructor_id, new_price in constructors_new_prices.items():
+            constructor_price = ConstructorPrices(
+                constructor_id=constructor_id,
+                price=new_price,
+                gp_id=gp_id)
         db.session.add(constructor_price)
     
     db.session.commit()

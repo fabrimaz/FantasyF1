@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sqlalchemy import text
@@ -323,14 +325,16 @@ def save_team_result(team_id, gp_id):
 
 @app.route('/api/processWeekend/<int:weekend_id>', methods=['GET'])
 def get_weekend_points(weekend_id=None):
-    result = 100
+
     try:
         resultScoring = run_scoring_job(app, weekend_id)
     except Exception as e:
         return jsonify({
             'success': False,
+            'job' : 'scoring',
             'weekend_id': weekend_id if weekend_id else 'current',
             'error': str(e),
+            'stack': traceback.format_exc()
         }), 500
     
     try:
@@ -338,8 +342,10 @@ def get_weekend_points(weekend_id=None):
     except Exception as e:
         return jsonify({
             'success': False,
+            'job' : 'pricing',
             'weekend_id': weekend_id if weekend_id else 'current',
             'error': str(e),
+            'stack': traceback.format_exc()
         }), 500
     
     return jsonify({
@@ -351,7 +357,7 @@ def get_weekend_points(weekend_id=None):
         }
     }), 200
 
-@app.route('/api/processWeekend', methods=['GET'])
+@app.route('/api/processWeekend/', methods=['GET'])
 def get_current_weekend_points():
     return get_weekend_points(None)
 
