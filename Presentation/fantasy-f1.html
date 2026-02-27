@@ -12,13 +12,13 @@
   <div class="nav-logo">FANTASY <span>F1</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="goTo('team')">Team</button>
-    <button class="nav-tab" onclick="goTo('leagues')">Leghe</button>
+    <button class="nav-tab" onclick="goTo('leagues')">Leagues</button>
     <button class="nav-tab" id="nav-admin-tab" onclick="goTo('admin')" style="display:none">Gestione</button>
   </div>
   <div class="nav-right">
     <button class="rules-btn" title="Rules" onclick="showRules()">i</button>
     <span class="nav-user" id="nav-username"></span>
-    <button class="btn-logout" onclick="logout()">Esci</button>
+    <button class="btn-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
 
@@ -39,8 +39,8 @@
       </div>
       <div class="card login-card">
         <div class="login-tabs">
-          <button class="login-tab active" id="tab-login" onclick="switchMode('login')">Accedi</button>
-          <button class="login-tab" id="tab-register" onclick="switchMode('register')">Registrati</button>
+          <button class="login-tab active" id="tab-login" onclick="switchMode('login')">Login</button>
+          <button class="login-tab" id="tab-register" onclick="switchMode('register')">Register</button>
         </div>
         <div id="login-error" class="login-error" style="display:none"></div>
         <div id="field-username" class="form-group" style="display:none">
@@ -56,7 +56,7 @@
           <input class="form-input" id="inp-password" type="password" placeholder="••••••••" value="demo123"
             onkeydown="if(event.key==='Enter') doAuth()" />
         </div>
-        <button class="btn btn-primary btn-full" id="auth-btn" onclick="doAuth()">→ Entra in pista</button>
+        <button class="btn btn-primary btn-full" id="auth-btn" onclick="doAuth()">→ To the track</button>
         <div class="login-hint">Demo: demo@f1.com · demo123</div>
       </div>
     </div>
@@ -66,42 +66,42 @@
 <!-- TEAM BUILDER -->
 <div class="screen" id="screen-team">
   <main>
-    <div class="page-title">Costruisci il <span>Team</span></div>
-    <div class="page-sub">Seleziona 5 piloti e 2 scuderie · Budget $100M per GP</div>
+    <div class="page-title">Build your <span>Team</span></div>
+    <div class="page-sub">Select 5 drivers and 2 constructors · Budget $100M per GP</div>
     
     <div class="card" style="margin-bottom:16px;padding:12px">
-      <label class="form-label">Scegli il Grand Prix</label>
+      <label class="form-label">Choose the Grand Prix</label>
       <select id="gp-selector" class="form-input" onchange="changeGP(this.value)" style="cursor:pointer"></select>
     </div>
     
     <div class="card budget-bar">
       <div>
-        <div class="budget-label">Budget rimasto</div>
+        <div class="budget-label">Budget left</div>
         <div class="budget-num" id="budget-left">$100.0M</div>
       </div>
       <div class="budget-track"><div class="budget-fill" id="budget-fill" style="width:100%"></div></div>
       <div style="text-align:right">
-        <div class="budget-label">Speso</div>
+        <div class="budget-label">Spent</div>
         <div style="font-size:18px;font-weight:900;color:var(--muted)" id="budget-spent">$0.0M</div>
       </div>
     </div>
     <div class="tb-layout">
       <div>
-        <div class="section-label">Piloti <span id="driver-count" style="color:var(--text)">0/5</span></div>
+        <div class="section-label">Drivers <span id="driver-count" style="color:var(--text)">0/5</span></div>
         <div class="drivers-grid" id="drivers-grid"></div>
-        <div class="section-label">Scuderie <span id="constr-count" style="color:var(--text)">0/2</span></div>
+        <div class="section-label">Constructors <span id="constr-count" style="color:var(--text)">0/2</span></div>
         <div class="constructors-grid" id="constructors-grid"></div>
       </div>
       <div class="my-team">
         <div class="card">
-          <div class="my-team-title">Il Mio Team</div>
-          <div class="my-team-sub" id="team-status">Seleziona piloti e scuderie</div>
-          <div class="section-label" style="margin-bottom:10px">Piloti</div>
+          <div class="my-team-title">My Team</div>
+          <div class="my-team-sub" id="team-status">Select drivers and constructors</div>
+          <div class="section-label" style="margin-bottom:10px">Drivers</div>
           <div id="driver-slots"></div>
-          <div class="section-label" style="margin-top:14px;margin-bottom:10px">Scuderie</div>
+          <div class="section-label" style="margin-top:14px;margin-bottom:10px">Constructors</div>
           <div id="constr-slots"></div>
           <button class="btn btn-primary btn-full" style="margin-top:16px"
-            id="save-btn" onclick="saveTeam()" disabled>Salva Team →</button>
+            id="save-btn" onclick="saveTeam()" disabled>Save Team →</button>
         </div>
       </div>
     </div>
@@ -111,23 +111,23 @@
 <!-- LEAGUES -->
 <div class="screen" id="screen-leagues">
   <main>
-    <div class="page-title">Leghe & <span>Classifiche</span></div>
-    <div class="page-sub">Entra in una lega con il codice o seleziona la tua</div>
+    <div class="page-title">Leagues & <span>Leaderboards</span></div>
+    <div class="page-sub">Join a league with a code or select your own</div>
     <div class="league-layout">
       <div>
         <div class="card join-card">
-          <div class="join-title">Entra in una Lega</div>
+          <div class="join-title">Join a League</div>
           <div class="form-group" style="margin-bottom:12px">
-            <label class="form-label">Codice Lega</label>
-            <input class="form-input" id="inp-code" placeholder="es. POLE24"
+            <label class="form-label">League Code</label>
+            <input class="form-input" id="inp-code" placeholder="e.g. POLE24"
               style="text-transform:uppercase;letter-spacing:3px"
               oninput="this.value=this.value.toUpperCase()"
               onkeydown="if(event.key==='Enter') joinLeague()" />
           </div>
-          <button class="btn btn-primary btn-full" onclick="joinLeague()">→ Unisciti</button>
-          <div class="hint-codes">Prova: FERRARI · AMICI01</div>
+          <button class="btn btn-primary btn-full" onclick="joinLeague()">→ Join</button>
+          <div class="hint-codes">Try: FERRARI · AMICI01</div>
         </div>
-        <div class="section-label">Le Mie Leghe</div>
+        <div class="section-label">My Leagues</div>
         <div id="my-leagues-list"></div>
       </div>
       <div>
@@ -139,12 +139,12 @@
           <span class="badge badge-red" id="lb-members">—</span>
         </div>
         <div class="card" style="margin-bottom:16px;padding:12px">
-          <label class="form-label">Scegli il Grand Prix</label>
+          <label class="form-label">Choose the Grand Prix</label>
           <select id="gp-selector-league" class="form-input" onchange="changeLeagueGP(this.value)" style="cursor:pointer"></select>
         </div>
         <div class="card" style="overflow:hidden">
           <table class="lb-table">
-            <thead><tr><th>#</th><th>Manager</th><th>Punti</th><th>Δ</th></tr></thead>
+            <thead><tr><th>#</th><th>Manager</th><th>Points</th><th>Δ</th></tr></thead>
             <tbody id="lb-body"></tbody>
           </table>
         </div>

@@ -22,12 +22,14 @@ let selConstrs = [];
 let selectedGP = null;  // Currently selected Grand Prix
 let teamCanEdit = true;  // Whether team can be edited based on lock_date
 let selectedLeagueGP = null;  // Selected GP for league view
+let USER_TOKEN = null; // For authenticated requests, if needed
 
 const BUDGET = 100;
 let myLeagues = ['POLE24'];
 let activeLeague = 'POLE24';
 //const API_BASE = 'http://localhost:5000/api'; // DEBUG
 const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
+
 
 // ────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
@@ -37,11 +39,11 @@ async function initApp() {
   try {
     fetch(API_BASE + '/health')
   } catch (e) {
-    showToast('Impossibile raggiungere il server', false);
+    showToast('Cannot reach the server', false);
   }
 
   const loadingTimer = setTimeout(() => {
-    showToast('Connessione al server in corso. In caso di attesa, riavvia l\'app', true);
+    showToast('Server is not responding. It might take more time, please restart the app', true);
     }, 5000);
 
   try {
@@ -71,7 +73,7 @@ async function initApp() {
   } catch(e) {
     clearTimeout(loadingTimer);
     console.error('Failed to load reference data:', e);
-    showToast('Errore caricamento dati', false);
+    showToast('Error loading data', false);
   }
 }
 
@@ -167,8 +169,9 @@ function doAuth() {
   .then(data => {
     if(data.error) { showErr(data.error); return; }
     setUser(data.user);
+    USER_TOKEN = data.token;
   })
-  .catch(e => showErr('Errore: ' + e.message));
+  .catch(e => showErr('Error: ' + e.message));
 }
 
 async function setUser(u) {
