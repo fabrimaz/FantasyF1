@@ -92,9 +92,30 @@ def register():
         'user': user.to_dict()
     }), 201
 
+# @app.route('/api/auth/verifyCode', methods=['POST'])
+# def verify_otp():
+#     data = request.get_json()
+#     email = data.get('email', '').strip()
+#     code = data.get('code', '').strip()
+    
+#     user = User.query.filter_by(email=email).first()
+#     if not user:
+#         return jsonify({'error': 'Utente non trovato'}), 404
+    
+#     if user.verification_code != code:
+#         return jsonify({'error': 'Codice non valido'}), 400
+    
+#     user.is_verified = True
+#     user.verification_code = None
+#     db.session.commit()
+    
+#     return jsonify({
+#         'success': True,
+#         'user': user.to_dict()
+#     }), 200
 
 def send_login_email(to_email, username):
-    api_key = "re_G5QNUav8_gX63kFbjrURWojyFWKrQYcxu"  # Load from env in production
+    api_key = os.getenv("RESEND_EMAIL_API_KEY")
     resend.api_key = api_key
     code = random.randint(00000, 99970)
 
