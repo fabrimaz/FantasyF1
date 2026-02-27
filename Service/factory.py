@@ -7,7 +7,7 @@ from models import db
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app,  resources={r"/api/*": {"origins": "*"}})
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or 'sqlite:///fantasy_f1.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JSON_SORT_KEYS'] = False
