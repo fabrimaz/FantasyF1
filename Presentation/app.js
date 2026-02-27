@@ -733,11 +733,11 @@ async function resetGameDate() {
 const GAME_RULES = [
   "Pick a team of 5 drivers and 2 constructors.",
   "The total budget for each team is $100M.",
-  "Constructors scores the sum of their two drivers points.",
-  "Fastest lap of a driver in your team gives 25 points.",
+  "Constructors scores the sum of their drivers points.",
+  "Fastest laps points are assigned to drivers only",
   "Prices will move dinamically based on performance and demand.",
   "Qualification locks the team for that GP - no changes allowed after lock.",
-  "Points are awarded based on real performance in the GP according to the following table:",
+  "Points are awarded based on real performance in the GP according to the following table:"
 ];
 
 const CHAPTER_2_RULES = [
@@ -756,6 +756,7 @@ const POSITION_POINTS = [
   { position: "P9", points: 4 },
   { position: "P10", points: 2 },
   { position: "P11", points: 1 },
+  { position: "Fastest lap", points: 25 },
 ];
 
 const DN_POINTS = [
