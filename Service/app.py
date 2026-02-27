@@ -7,6 +7,7 @@ import traceback
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from mailersend import EmailBuilder, MailerSendClient
+import requests
 from sqlalchemy import text
 from scheduling.pricing_job import update_pricing
 from scheduling.scoring_job import run_scoring_job
@@ -123,18 +124,21 @@ def send_login_email(to_email, username):
     sender = "fantasyf1.poleposition@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")
     code = random.randint(100000, 999999) 
-
-    ms = MailerSendClient()
-
-    email = (EmailBuilder()
-            .from_email("info@domain.com", "Fantasy F1")
-            .to_many([{"email": to_email, "name": username}])
-            .subject("Fantasy F1 - welcome!")
-            .text("Welcome to Fantasy F1! Your code is {code}")
-            .build())
-
+    
     try: 
-        response = ms.emails.send(email)
+        response = requests.post(
+            "https://api.mailersend.com/v1/email",
+            headers={
+                "Authorization": f"Bearer {os.getenv('MAILERSEND_TOKEN')}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": {"email": "info@domain.com"},  # ti danno un indirizzo trial
+                "to": [{"email": to_email}],
+                "subject": "Fantasy F1 - welcome!",
+                "html": "Welcome to Fantasy F1!\nYour code is {code}"
+            }
+        )
     except Exception as e:
         print(e, flush=True)
         print("An error occurred when delivering the email", flush=True)
