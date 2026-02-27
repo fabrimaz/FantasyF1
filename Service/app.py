@@ -1,4 +1,7 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import random
+import smtplib
 import traceback
 
 from flask import Flask, request, jsonify
@@ -115,19 +118,26 @@ def register():
 #     }), 200
 
 def send_login_email(to_email, username):
-    api_key = os.getenv("RESEND_EMAIL_API_KEY")
-    resend.api_key = api_key
-    code = random.randint(00000, 99970)
+    sender = "fantasyf1.poleposition@gmail.com"
+    app_password = os.getenv("GMAIL_APP_PASSWORD")
+    recipient = "friend@example.com"
+    code = random.randint(1000, 9999) 
 
-    print(f"Sending email to {to_email} with verification code {code}")
-    r = resend.Emails.send({
-    "from": "onboarding@resend.dev",
-    "to": to_email,
-    "subject": "Fantasy F1 - Welcome!",
-    "html": f"<p>Ciao {username}, benvenuto in Fantasy F1!</p><p>Your code is {code}</p>"
-    })
+    msg = MIMEMultipart()
+    msg["From"] = sender
+    msg["To"] = to_email
+    msg["Subject"] = "Fantasy F1 - Welcome!"
+
+    msg.attach(MIMEText(f"Ciao {username}, benvenuto in Fantasy F1!\nIl tuo codice è {code}", "plain"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(sender, app_password)
+        server.send_message(msg)
+
+    print("Sent!")
     return code
-
+    
 # ============ GRAND PRIX ENDPOINTS ============
 
 @app.route('/api/grandprix', methods=['GET'])
