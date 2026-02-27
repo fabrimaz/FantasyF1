@@ -6,7 +6,6 @@ import traceback
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import resend
 from sqlalchemy import text
 from scheduling.pricing_job import update_pricing
 from scheduling.scoring_job import run_scoring_job
