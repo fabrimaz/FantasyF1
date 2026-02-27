@@ -121,10 +121,9 @@ def verify_otp():
 
 def send_login_email(to_email, username):
     print("sending email...", flush=True)
-    sender = "fantasyf1.poleposition@gmail.com"
-    app_password = os.getenv("GMAIL_APP_PASSWORD")
     code = random.randint(100000, 999999) 
-    
+    body = "Welcome to Fantasy F1!\nYour code is " + code
+
     try: 
         response = requests.post(
             "https://api.mailersend.com/v1/email",
@@ -136,7 +135,7 @@ def send_login_email(to_email, username):
                 "from": {"email": "noreply@test-ywj2lpnkw3pg7oqz.mlsender.net"},  # ti danno un indirizzo trial
                 "to": [{"email": to_email}],
                 "subject": "Fantasy F1 - welcome!",
-                "html": "Welcome to Fantasy F1!\nYour code is {code}"
+                "html": body
             }
         )
     except Exception as e:
