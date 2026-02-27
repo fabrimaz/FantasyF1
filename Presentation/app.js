@@ -46,8 +46,8 @@ async function initApp() {
 
   try {
     const [driversResp, constrsResp, leaguesResp, gpsResp] = await Promise.all([
-      fetch(API_BASE + '/drivers'),
-      fetch(API_BASE + '/constructors'),
+      fetch(API_BASE + '/drivers', { cache: 'no-store' }),
+      fetch(API_BASE + '/constructors', { cache: 'no-store' }),
       fetch(API_BASE + '/leagues'),
       fetch(API_BASE + '/grandprix')
     ]);
@@ -268,7 +268,7 @@ async function loadTeamForGP() {
 
 function renderDriverGrid() {
   console.log('renderDriverGrid - DRIVERS:', DRIVERS.length, 'selDrivers:', selDrivers.length, 'budget left:', calcRem());
-  
+  console.log(DRIVERS)
   drivers_by_gp = DRIVERS.map(d => 
     {
       d.current_price = d.price_history ? 
@@ -276,6 +276,7 @@ function renderDriverGrid() {
       return d;
     })
     
+  drivers_by_gp.map(d => console.log(`Driver ${d.name} - price for GP ${selectedGP.id}: $${d.current_price}M`));
   $('drivers-grid').innerHTML = drivers_by_gp.map(d => {
     const isSelected = !!selDrivers.find(x => x.id === d.id);
     const toDeselect = !isSelected && (selDrivers.length >= 5 || calcRem() - d.price < 0);
