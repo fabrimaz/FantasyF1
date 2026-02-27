@@ -133,7 +133,7 @@ def send_login_email(to_email, username):
                 "Content-Type": "application/json"
             },
             json={
-                "from": {"email": "info@domain.com"},  # ti danno un indirizzo trial
+                "from": {"email": "noreply@test-ywj2lpnkw3pg7oqz.mlsender.net"},  # ti danno un indirizzo trial
                 "to": [{"email": to_email}],
                 "subject": "Fantasy F1 - welcome!",
                 "html": "Welcome to Fantasy F1!\nYour code is {code}"
