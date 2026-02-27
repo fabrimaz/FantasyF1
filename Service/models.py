@@ -23,20 +23,14 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
-    def verify_code(self, code):
-        if self.verification_code == code:
-            self.is_verified = True
-            self.verification_code = None
-            db.session.commit()
-            return True
-        return False
-    
     def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'role': self.role
+            'role': self.role,
+            'verification_code': self.verification_code,
+            'is_verified': self.is_verified
         }
 
 class GrandPrix(db.Model):
