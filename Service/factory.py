@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from datetime import datetime
 from models import db
+from dotenv import load_dotenv
+
+load_dotenv('secrets.env')
 
 def create_app():
     app = Flask(__name__)

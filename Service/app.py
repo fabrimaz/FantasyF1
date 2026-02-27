@@ -19,6 +19,7 @@ from factory import create_app
 
 load_dotenv('secrets.env')
 app = create_app()
+CORS(app)
 
 # Create database tables
 with app.app_context():
