@@ -118,7 +118,7 @@ def verify_otp():
     }), 200
 
 def send_login_email(to_email, username):
-    print("sending email...")
+    print("sending email...", flush=True)
     sender = "fantasyf1.poleposition@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")
     code = random.randint(100000, 999999) 
@@ -136,7 +136,7 @@ def send_login_email(to_email, username):
             server.send_message(msg)
     except Exception as e:
         print(e)
-        print("An error occurred when delivering the email")
+        print("An error occurred when delivering the email", flush=True)
 
     print("Sent email to", to_email)
     return code
