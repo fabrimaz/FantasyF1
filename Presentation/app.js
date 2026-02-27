@@ -694,13 +694,15 @@ const GAME_RULES = [
   "Pick a team of 5 drivers and 2 constructors.",
   "The total budget for each team is $100M.",
   "Constructors scores the sum of their two drivers points.",
-  "A driver in your constructors scoring DNS or DNF gets -25.",
-  "A driver in your team scoring DNS or DNF get -10 points.",
-  "Fastest lap of a driver in your team gives +25 points.",
-  "Prices will move dinammically based on performance and demand.",
+  "Fastest lap of a driver in your team gives 25 points.",
+  "Prices will move dinamically based on performance and demand.",
   "Qualification locks the team for that GP - no changes allowed after lock.",
   "Points are awarded based on real performance in the GP according to the following table:",
 ];
+
+const CHAPTER_2_RULES = [
+    "DNF or DNS of a driver gives different negative points both driver and constructor:",
+]
 
 const POSITION_POINTS = [
   { position: "P1", points: 50 },
@@ -716,10 +718,20 @@ const POSITION_POINTS = [
   { position: "P11", points: 1 },
 ];
 
+const DN_POINTS = [
+  { position: "DNF", driver: -10, constructor: -25 },
+  { position: "DNS", driver: -10, constructor: -25  },
+];
+
 // Mostra le regole nella schermata
 function renderRulesScreen() {
   const list = document.getElementById("rules-list");
   list.innerHTML = GAME_RULES.map(rule =>
+    `<li class="rule-item">${rule}</li>`
+  ).join("");
+
+  const list2 = document.getElementById("rules-list-2");
+  list2.innerHTML = CHAPTER_2_RULES.map(rule =>
     `<li class="rule-item">${rule}</li>`
   ).join("");
 
@@ -729,6 +741,7 @@ function renderRulesScreen() {
 
 function renderPointsTable() {
   const container = document.getElementById("points-table-container");
+  const container2 = document.getElementById("points-table-container-2");
 
   container.innerHTML = `
     <table class="points-table">
@@ -743,6 +756,27 @@ function renderPointsTable() {
           <tr>
             <td>${p.position}</td>
             <td>${p.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+    container2.innerHTML = `
+    <table class="points-table">
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Pts Driver</th>
+          <th>Pts Constructor</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${DN_POINTS.map(p => `
+          <tr>
+            <td>${p.position}</td>
+            <td>${p.driver}</td>
+            <td>${p.constructor}</td>
           </tr>
         `).join("")}
       </tbody>

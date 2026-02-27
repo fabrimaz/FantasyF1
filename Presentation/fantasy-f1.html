@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fantasy F1 — Pole Position</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,8 +17,8 @@
     <button class="nav-tab" id="nav-admin-tab" onclick="goTo('admin')" style="display:none">Gestione</button>
   </div>
   <div class="nav-right">
-    <button class="rules-btn" title="Rules" onclick="showRules()">i</button>
     <span class="nav-user" id="nav-username"></span>
+    <button class="rules-btn" title="Rules" onclick="showRules()">i</button>
     <button class="btn-logout" onclick="logout()">Logout</button>
   </div>
 </nav>
@@ -159,6 +160,8 @@
       <div class="nav-logo">FANTASY <span>F1</span></div>
       <ul id="rules-list" class="rules-list"></ul>
       <div id="points-table-container"></div>
+      <ul id="rules-list-2" class="rules-list"></ul>
+      <div id="points-table-container-2"></div>
       <button  class="btn btn-primary btn-full" onclick="goTo('team')">Back to the Team</button>
   </div>
 </div>
