@@ -6,6 +6,7 @@ import traceback
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from mailersend import EmailBuilder, MailerSendClient
 from sqlalchemy import text
 from scheduling.pricing_job import update_pricing
 from scheduling.scoring_job import run_scoring_job
@@ -123,22 +124,22 @@ def send_login_email(to_email, username):
     app_password = os.getenv("GMAIL_APP_PASSWORD")
     code = random.randint(100000, 999999) 
 
-    msg = MIMEMultipart()
-    msg["From"] = sender
-    msg["To"] = to_email
-    msg["Subject"] = "Fantasy F1 - Welcome!"
+    ms = MailerSendClient()
 
-    msg.attach(MIMEText(f"Ciao {username}, benvenuto in Fantasy F1!\nIl tuo codice è {code}", "plain"))
+    email = (EmailBuilder()
+            .from_email("info@domain.com", "Fantasy F1")
+            .to_many([{"email": to_email, "name": username}])
+            .subject("Fantasy F1 - welcome!")
+            .text("Welcome to Fantasy F1! Your code is {code}")
+            .build())
+
     try: 
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()
-            server.login(sender, app_password)
-            server.send_message(msg)
+        response = ms.emails.send(email)
     except Exception as e:
         print(e, flush=True)
         print("An error occurred when delivering the email", flush=True)
 
-    print("Sent email to", to_email, flush=True)
+    print("Sent email to", to_email, " - ", response, flush=True)
     return code
     
 # ============ GRAND PRIX ENDPOINTS ============
