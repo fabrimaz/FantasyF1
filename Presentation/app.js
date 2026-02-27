@@ -25,8 +25,8 @@ let selectedLeagueGP = null;  // Selected GP for league view
 let USER_TOKEN = null; // For authenticated requests, if needed
 
 const BUDGET = 100;
-let myLeagues = ['POLE24'];
-let activeLeague = 'POLE24';
+let myLeagues = [];
+let activeLeague = null;
 //const API_BASE = 'http://localhost:5000/api'; // DEBUG
 const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
 
