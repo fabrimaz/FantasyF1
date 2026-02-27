@@ -64,6 +64,38 @@
   </main>
 </div>
 
+<!-- OTP VERIFICATION SCREEN -->
+<div class="screen active" id="screen-otp">
+  <main>
+  <div class="login-box">
+    <div class="login-hero">
+        <div class="login-stripes">
+          <div class="login-stripe" style="width:50px;background:var(--red)"></div>
+          <div class="login-stripe" style="width:24px;background:var(--gold)"></div>
+          <div class="login-stripe" style="width:14px;background:#27F4D2"></div>
+        </div>
+        <div class="login-logo">FANTASY <span>F1</span></div>
+        <div class="login-tagline">Pole Position · Season 2026</div>
+    </div>
+    <div class="information-container">
+      <div class="login-title">Verify Email</div>
+      <div class="login-sub">We sent a code to <span id="otp-email-display" style="color:var(--gold)"></span></div>
+      
+      <div style="display:flex;gap:10px;justify-content:center;margin:28px 0">
+        <input id="otp-input" class="inp" type="text" maxlength="6" placeholder="000000"
+          style="text-align:center;font-size:28px;font-weight:700;letter-spacing:10px;width:200px"
+          oninput="this.value=this.value.replace(/\D/g,'')"
+          onkeydown="if(event.key==='Enter') verifyOTP()">
+      </div>
+
+      <div id="otp-error" style="display:none;color:#e8002d;font-size:13px;margin-bottom:12px;text-align:center"></div>
+
+      <button class="btn btn-primary btn-full" onclick="verifyOTP()">Let's go</button>
+    </div>
+    </div>
+    </main>
+</div>
+
 <!-- TEAM BUILDER -->
 <div class="screen" id="screen-team">
   <main>

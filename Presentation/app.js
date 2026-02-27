@@ -167,11 +167,51 @@ function doAuth() {
   })
   .then(r => r.json())
   .then(data => {
-    if(data.error) { showErr(data.error); return; }
+  if(data.error) { showErr(data.error); return; }
+  // Show OTP screen instead of logging in directly
+  console.log('Auth success, pending OTP verification for user:', data.user);
+  pendingUser = data.user;
+  pendingToken = data.token;
+  if (authMode != 'login') {
+    $('otp-email-display').textContent = $('inp-email').value.trim();
+    $('otp-error').style.display = 'none';
+    $('otp-input').value = '';
+    showScreen('otp');
+  }
+  else {
     setUser(data.user);
     USER_TOKEN = data.token;
-  })
+  }
+
+})
   .catch(e => showErr('Error: ' + e.message));
+}
+
+function verifyOTP() {
+  const code = $('otp-input').value.trim();
+  const email = $('inp-email').value.trim();
+
+  fetch(API_BASE + '/auth/verifyCode', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ email, code })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if(data.error) {
+      $('otp-error').textContent = '! ' + data.error;
+      $('otp-error').style.display = 'block';
+      $('otp-input').value = '';
+      $('otp-input').focus();
+      return;
+    }
+    setUser(pendingUser);
+    USER_TOKEN = pendingToken;
+  })
+  .catch(e => {
+    $('otp-error').textContent = 'Errore: ' + e.message;
+    $('otp-error').style.display = 'block';
+  });
 }
 
 async function setUser(u) {

@@ -14,12 +14,12 @@ import migration
 from models import ConstructorPrices, DriverPrices, db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
 from auth import generate_token
+from dotenv import load_dotenv
 import os
-
-
 from factory import create_app
+
+load_dotenv('secrets.env')
 app = create_app()
-CORS(app)
 
 # Create database tables
 with app.app_context():
@@ -95,32 +95,31 @@ def register():
         'user': user.to_dict()
     }), 201
 
-# @app.route('/api/auth/verifyCode', methods=['POST'])
-# def verify_otp():
-#     data = request.get_json()
-#     email = data.get('email', '').strip()
-#     code = data.get('code', '').strip()
+@app.route('/api/auth/verifyCode', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email', '').strip()
+    code = data.get('code', '').strip()
     
-#     user = User.query.filter_by(email=email).first()
-#     if not user:
-#         return jsonify({'error': 'Utente non trovato'}), 404
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'error': 'Utente non trovato'}), 404
     
-#     if user.verification_code != code:
-#         return jsonify({'error': 'Codice non valido'}), 400
+    if user.verification_code != code:
+        return jsonify({'error': 'Codice non valido'}), 400
     
-#     user.is_verified = True
-#     user.verification_code = None
-#     db.session.commit()
+    user.is_verified = True
+    user.verification_code = None
+    db.session.commit()
     
-#     return jsonify({
-#         'success': True,
-#         'user': user.to_dict()
-#     }), 200
+    return jsonify({
+        'success': True,
+        'user': user.to_dict()
+    }), 200
 
 def send_login_email(to_email, username):
     sender = "fantasyf1.poleposition@gmail.com"
     app_password = os.getenv("GMAIL_APP_PASSWORD")
-    recipient = "friend@example.com"
     code = random.randint(1000, 9999) 
 
     msg = MIMEMultipart()
@@ -129,13 +128,16 @@ def send_login_email(to_email, username):
     msg["Subject"] = "Fantasy F1 - Welcome!"
 
     msg.attach(MIMEText(f"Ciao {username}, benvenuto in Fantasy F1!\nIl tuo codice è {code}", "plain"))
+    try: 
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender, app_password)
+            server.send_message(msg)
+    except Exception as e:
+        print(e)
+        print("An error occurred when delivering the email")
 
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(sender, app_password)
-        server.send_message(msg)
-
-    print("Sent!")
+    print("Sent email to", to_email)
     return code
     
 # ============ GRAND PRIX ENDPOINTS ============
