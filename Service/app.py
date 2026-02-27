@@ -86,7 +86,8 @@ def register():
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already used'}), 400
     
-    code = send_login_email(email, username)
+    code = random.randint(100000, 999999) 
+    send_login_email(email, username, code)
     user = User(username=username, email=email, role='Player', verification_code=code)
     user.set_password(password)
     db.session.add(user)
@@ -119,10 +120,9 @@ def verify_otp():
         'user': user.to_dict()
     }), 200
 
-def send_login_email(to_email, username):
+def send_login_email(to_email, username, code):
     print("sending email...", flush=True)
-    code = random.randint(100000, 999999) 
-    body = "Welcome to Fantasy F1!\nYour code is " + code
+    body = "Ciao "+ username + ",\nwelcome to Fantasy F1!\nYour code is " + str(code)
 
     try: 
         response = requests.post(
