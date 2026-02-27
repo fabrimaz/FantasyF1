@@ -135,10 +135,10 @@ def send_login_email(to_email, username):
             server.login(sender, app_password)
             server.send_message(msg)
     except Exception as e:
-        print(e)
+        print(e, flush=True)
         print("An error occurred when delivering the email", flush=True)
 
-    print("Sent email to", to_email)
+    print("Sent email to", to_email, flush=True)
     return code
     
 # ============ GRAND PRIX ENDPOINTS ============
