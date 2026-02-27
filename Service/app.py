@@ -1,15 +1,15 @@
+import random
 import traceback
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import resend
 from sqlalchemy import text
 from scheduling.pricing_job import update_pricing
 from scheduling.scoring_job import run_scoring_job
 import migration
 from models import ConstructorPrices, DriverPrices, db, User, Team, League, LeagueMembership, GrandPrix, TeamResult, GameState, Driver, Constructor
 from datetime import datetime, timedelta
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 from auth import generate_token
 import os
 
@@ -24,14 +24,14 @@ with app.app_context():
     
     # Seed demo user if doesn't exist
     if not User.query.filter_by(email='demo@f1.com').first():
-        demo_user = User(username='demo', email='demo@f1.com', role='Player')
+        demo_user = User(username='demo', email='demo@f1.com', role='Player', verification_code=None, is_verified=True)
         demo_user.set_password('demo123')
         db.session.add(demo_user)
         db.session.commit()
     
     # Seed admin user if doesn't exist
     if not User.query.filter_by(email='admin@f1.com').first():
-        admin_user = User(username='admin', email='admin@f1.com', role='Administrator')
+        admin_user = User(username='admin', email='admin@f1.com', role='Administrator', verification_code=None, is_verified=True)
         admin_user.set_password('admin123')
         db.session.add(admin_user)
         db.session.commit()
@@ -73,15 +73,16 @@ def register():
     password = data.get('password', '')
     
     if not username or not email or not password:
-        return jsonify({'error': 'Compila tutti i campi'}), 400
+        return jsonify({'error': 'All fields must be filled'}), 400
     
     if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email gia in uso'}), 400
+        return jsonify({'error': 'Email already used'}), 400
     
     if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username gia in uso'}), 400
+        return jsonify({'error': 'Username already used'}), 400
     
-    user = User(username=username, email=email, role='Player')
+    code = send_login_email(email, username)
+    user = User(username=username, email=email, role='Player', verification_code=code)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
@@ -92,15 +93,19 @@ def register():
     }), 201
 
 
-# def send_login_email(to_email, username):
-#     message = Mail(
-#         from_email='tuaemail@gmail.com',  # quella con cui ti sei registrato su SendGrid
-#         to_emails=to_email,
-#         subject='Nuovo accesso a FantasyF1',
-#         html_content=f'<p>Ciao {username}, hai effettuato un accesso.</p>'
-#     )
-#     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-#     sg.send(message)
+def send_login_email(to_email, username):
+    api_key = "re_G5QNUav8_gX63kFbjrURWojyFWKrQYcxu"  # Load from env in production
+    resend.api_key = api_key
+    code = random.randint(00000, 99970)
+
+    print(f"Sending email to {to_email} with verification code {code}")
+    r = resend.Emails.send({
+    "from": "onboarding@resend.dev",
+    "to": to_email,
+    "subject": "Fantasy F1 - Welcome!",
+    "html": f"<p>Ciao {username}, benvenuto in Fantasy F1!</p><p>Your code is {code}</p>"
+    })
+    return code
 
 # ============ GRAND PRIX ENDPOINTS ============
 
