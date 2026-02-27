@@ -114,10 +114,12 @@ def initialize_f1_data(db):
             {'name':'Mercedes',         'price':35.0, 'pts':0, 'color':'#00D2BE'},
             {'name':'Aston Martin',     'price':39.0, 'pts':0, 'color':'#006341'},
             {'name':'Williams',         'price':38.0, 'pts':0, 'color':'#003262'},
-            {'name':'Audi',             'price':35.0, 'pts':0, 'color':'#E5001B'},
-            {'name':'Cadillac',         'price':31.0, 'pts':0, 'color':'#003478'},
-            {'name':'Haas',             'price':26.0, 'pts':0, 'color':'#C8102E'},
+            {'name':'Audi',             'price':35.0, 'pts':0, 'color':'#FC445A'},
+            {'name':'Cadillac',         'price':31.0, 'pts':0, 'color':'#786200'},
+            {'name':'Haas',             'price':26.0, 'pts':0, 'color':'#7A0404'},
             {'name':'Alpine',           'price':27.0, 'pts':0, 'color':'#0082FA'},
+            {'name':'Racing Bulls',      'price':12.0, 'pts':0, 'color':'#5C00FA'},
+
         ]
         for constructor_data in constructors_data:
             constructor = Constructor(
