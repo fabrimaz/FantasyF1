@@ -386,9 +386,8 @@ def get_constructors():
     for constructor_dict in list_of_constructors_dict:
         constructor_prices = constructor_price_list.get(constructor_dict['id'])
         constructor_prices = sorted(constructor_prices, key=lambda cp: cp.gp_id, reverse=True) if constructor_prices else []
-        constructor_dict['price_history'] = constructor_prices if constructor_prices else None
-        constructor_dict['price'] = constructor_prices[0].price if constructor_prices else constructor_dict['price']
-        
+        constructor_dict['price_history'] = [cp.to_dict() for cp in constructor_prices] if constructor_prices else None
+        constructor_dict['price'] = constructor_prices[0].to_dict().get('price', constructor_dict['price']) if constructor_prices else constructor_dict['price']
     return jsonify(list_of_constructors_dict), 200
 
 def get_driver_prices():
