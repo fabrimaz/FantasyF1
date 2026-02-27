@@ -240,7 +240,7 @@ function renderGPSelector() {
   gpSelector.innerHTML = GRANDPRIX.map(gp => {
     const isSelected = selectedGP && gp.id === selectedGP.id;
     return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}>
-      ${gp.name}${gp.status === 'current' ? ' (attualmente modificabile)' : gp.status === 'future' ? ' (prossimamente)' : ''}
+      ${gp.name}${gp.status === 'current' ? '' : gp.status === 'future' ? ' - next' : ''}
     </option>`;
   }).join('');
 }
