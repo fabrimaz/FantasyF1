@@ -132,8 +132,8 @@ def send_login_email(to_email, username, code):
                 "Content-Type": "application/json"
             },
             json={
-                "from": {"email": "noreply@test-ywj2lpnkw3pg7oqz.mlsender.net"}, 
-                "to": [{"email": "superfabrix@hotmail.it"}],
+                "from": {"email": "noreply@test-r9084zv6o18gw63d.mlsender.net"}, 
+                "to": [{"email": "fantasyf1.poleposition@gmail.com"}],
                 "cc": [{ "email": to_email,}],
                 "subject": "Fantasy F1 - welcome!",
                 "html": body
