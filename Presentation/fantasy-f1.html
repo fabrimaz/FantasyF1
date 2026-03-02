@@ -54,11 +54,11 @@
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input class="form-input" id="inp-password" type="password" placeholder="••••••••" value="demo123"
+          <input class="form-input" id="inp-password" type="password" placeholder="••••••••" value=""
             onkeydown="if(event.key==='Enter') doAuth()" />
         </div>
         <button class="btn btn-primary btn-full" id="auth-btn" onclick="doAuth()">→ To the track</button>
-        <div class="login-hint">Demo: demo@f1.com · demo123</div>
+        <div class="login-hint">-</div>
       </div>
     </div>
   </main>
@@ -159,7 +159,7 @@
               onkeydown="if(event.key==='Enter') joinLeague()" />
           </div>
           <button class="btn btn-primary btn-full" onclick="joinLeague()">→ Join</button>
-          <div class="hint-codes">Try: FERRARI · AMICI01</div>
+          <div class="hint-codes">Enter a league name</div>
         </div>
         <div class="section-label">My Leagues</div>
         <div id="my-leagues-list"></div>
