@@ -97,7 +97,6 @@ def register():
     return jsonify({
         'success': True,
         'user': user.to_dict(),
-        'email_success': email_outcome
     }), 201
 
 @app.route('/api/auth/verifyCode', methods=['POST'])
@@ -124,7 +123,7 @@ def verify_otp():
 
 def send_login_email(to_email, username, code):
     print("sending email...", flush=True)
-    body = "Ciao "+ username + ",\nwelcome to Fantasy F1!\nYour code is " + str(code)
+    body = "Ciao "+ username + ",\nwelcome to Fantasy F1!\nYour code is " + str(code) + "\nYour email is " +  to_email
 
     try: 
         response = requests.post(
@@ -136,7 +135,6 @@ def send_login_email(to_email, username, code):
             json={
                 "from": {"email": "noreply@test-r9084zv6o18gw63d.mlsender.net"}, 
                 "to": [{"email": "fantasyf1.poleposition@gmail.com"}],
-                "cc": [{ "email": to_email, "name": username}],
                 "subject": "Fantasy F1 - welcome!",
                 "html": body
             }
