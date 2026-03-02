@@ -87,7 +87,8 @@ def register():
         return jsonify({'error': 'Username already used'}), 400
     
     code = random.randint(100000, 999999) 
-    send_login_email(email, username, code)
+    email_outcome = send_login_email(email, username, code)
+    email_sent = email_outcome.status_code >= 200 and email_outcome.status_code < 300
     user = User(username=username, email=email, role='Player', verification_code=code)
     user.set_password(password)
     db.session.add(user)
@@ -95,7 +96,8 @@ def register():
     
     return jsonify({
         'success': True,
-        'user': user.to_dict()
+        'user': user.to_dict(),
+        'email_success': email_outcome
     }), 201
 
 @app.route('/api/auth/verifyCode', methods=['POST'])
@@ -134,7 +136,7 @@ def send_login_email(to_email, username, code):
             json={
                 "from": {"email": "noreply@test-r9084zv6o18gw63d.mlsender.net"}, 
                 "to": [{"email": "fantasyf1.poleposition@gmail.com"}],
-                "cc": [{ "email": to_email,}],
+                "cc": [{ "email": to_email, "name": username}],
                 "subject": "Fantasy F1 - welcome!",
                 "html": body
             }
@@ -144,7 +146,7 @@ def send_login_email(to_email, username, code):
         print("An error occurred when delivering the email", flush=True)
 
     print("Sent email to", to_email, " - ", response, flush=True)
-    return code
+    return response
     
 # ============ GRAND PRIX ENDPOINTS ============
 
