@@ -10,6 +10,7 @@ let DRIVERS = [];  // Fetched from API
 let CONSTRUCTORS = [];  // Fetched from API
 let LEAGUES_DB = {};  // Fetched from API when needed
 let GRANDPRIX = [];  // Fetched from API
+let GRANDPRIXANDALL = [];
 
 // ────────────────────────────────────────────────────────────────────────
 // STATE
@@ -60,11 +61,19 @@ async function initApp() {
     CONSTRUCTORS = await constrsResp.json();
     const leagues = await leaguesResp.json();
     GRANDPRIX = await gpsResp.json();
+    GRANDPRIXANDALL =  [...GRANDPRIX]
+    const allGps = {
+      name: "General Rank",
+      id: 50,
+      };
+    GRANDPRIXANDALL.push(allGps)
+  
     
     console.log('DRIVERS:', DRIVERS.length);
     console.log('CONSTRUCTORS:', CONSTRUCTORS.length);
     console.log('GRANDPRIX:', GRANDPRIX.length);
-    
+    console.log('all:', GRANDPRIXANDALL.length);
+
     leagues.forEach(l => { LEAGUES_DB[l.code] = l; });
     
     // Set current GP (the one with status='current', or first future one)
@@ -310,8 +319,6 @@ async function loadTeamForGP() {
 }
 
 function renderDriverGrid() {
-  console.log('renderDriverGrid - DRIVERS:', DRIVERS.length, 'selDrivers:', selDrivers.length, 'budget left:', calcRem());
-  console.log(DRIVERS)
   drivers_by_gp = DRIVERS.map(d => 
     {
       d.current_price = d.price_history ? 
@@ -513,10 +520,10 @@ function renderLeagues() {
   $('lb-members').textContent = l.members + ' manager';
 
   // GP Selector
-  $('gp-selector-league').innerHTML = GRANDPRIX.map(gp => {
+  $('gp-selector-league').innerHTML = GRANDPRIXANDALL.map(gp => {
     const isSelected = selectedLeagueGP && gp.id === selectedLeagueGP.id;
     return `<option value="${gp.id}" ${isSelected ? 'selected' : ''}>
-      Gran Premio del ${gp.name}
+      ${gp.id == 50 ? "General Rank" : "Grand Prix of " + gp.name}
     </option>`;
   }).join('');
 

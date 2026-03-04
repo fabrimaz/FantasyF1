@@ -306,17 +306,25 @@ def get_gp_results(league_id, gp_id):
     memberships = LeagueMembership.query.filter_by(league_id=league_id).all()
     member_ids = [m.user_id for m in memberships]
 
-    # Get team results for this GP from league members
-    teamResults = TeamResult.query.filter(
-        TeamResult.gp_id == gp_id,
-        TeamResult.user_id.in_(member_ids)
-    ).order_by(TeamResult.points.desc()).all()
+    if id == 50:
+        # gets all results
+        teamResults = TeamResult.query.filter(
+            TeamResult.user_id.in_(member_ids)
+        ).order_by(TeamResult.points.desc()).all()
+
+    else:
+        # Get team results for this GP from league members
+        teamResults = TeamResult.query.filter(
+            TeamResult.gp_id == gp_id,
+            TeamResult.user_id.in_(member_ids)
+        ).order_by(TeamResult.points.desc()).all()
+
 
     output = []
     for tr in teamResults:
         d = dict()
         d['user_id'] = tr.user_id
-        d['points'] = tr.points
+        d['points'] = sum((tr.points for team in teamResults if team.user_id == tr.user_id), 0)
         d['team'] = next((m.team_name for m in memberships if m.user_id == tr.user_id), None)
         d['team_id'] = Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first() else None
         output.append(d)
