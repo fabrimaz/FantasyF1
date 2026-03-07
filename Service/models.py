@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
@@ -65,7 +67,8 @@ class GrandPrix(db.Model):
     
     def get_status(self):
         """Determina lo status del GP usando la data fittizia del gioco"""
-        game_date = GameState.get_game_date()
+        setup = GameState.get_game_date()
+        game_date = datetime.now() + timedelta(hours=setup.offset_hours)
         gp_date = self.date
         gp_lock = self.lock_date
         
@@ -74,7 +77,7 @@ class GrandPrix(db.Model):
             return 'past'
         
         # Se siamo nel periodo di gara (tra lock e race date)
-        elif gp_lock and game_date >= gp_lock and game_date < gp_date:
+        elif gp_lock and game_date >= gp_lock:
             return 'started'
         # Se siamo PRIMA del lock_date: solo se dentro 14 giorni dalla race è 'current'
         # Altrimenti è 'future' (non ancora attivato)
