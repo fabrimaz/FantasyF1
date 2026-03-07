@@ -75,10 +75,11 @@ class GrandPrix(db.Model):
         # Se la gara è passata
         if game_date >= gp_date:
             return 'past'
-        
+
         # Se siamo nel periodo di gara (tra lock e race date)
         elif gp_lock and game_date >= gp_lock:
             return 'started'
+        
         # Se siamo PRIMA del lock_date: solo se dentro 14 giorni dalla race è 'current'
         # Altrimenti è 'future' (non ancora attivato)
         elif gp_lock and game_date < gp_lock:
@@ -155,7 +156,8 @@ class Team(db.Model):
     
     def to_dict(self):
         # Team can be edited if we haven't reached the lock_date yet (using game date)
-        game_date = GameState.get_game_date().current_date
+        setup = GameState.get_game_date()
+        game_date = datetime.now() + timedelta(hours=setup.offset_hours)
         can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > game_date
         return {
             'id': self.id,
