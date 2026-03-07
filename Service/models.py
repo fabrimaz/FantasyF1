@@ -155,7 +155,7 @@ class Team(db.Model):
     
     def to_dict(self):
         # Team can be edited if we haven't reached the lock_date yet (using game date)
-        game_date = GameState.get_game_date()
+        game_date = GameState.get_game_date().current_date
         can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > game_date
         return {
             'id': self.id,
@@ -254,7 +254,7 @@ class GameState(db.Model):
             gs = GameState(current_date=datetime.utcnow())
             db.session.add(gs)
             db.session.commit()
-        return gs.current_date
+        return gs
     
 class DriverPrices(db.Model):
     __tablename__ = 'driver_prices'
