@@ -55,13 +55,11 @@ def calculate_team_score(drivers, constructors, race_results):
         position = result.get('position')
         position_text = result.get('positionText')
         d = result['Driver']
-        print(position, position_text, d)
-        driver_num_1 = result['Driver']['permanentNumber']
-        print(driver_num_1)
+        driver_num_1 = d.get('permanentNumber', 0)
         driver_num = int(driver_num_1)
         is_driver_with_fatest_lap = result.get('FastestLap', {}).get('rank') == '1'
         constructor_name = result['Constructor']['constructorId']
-        print(f"  🏁 Risultato: Driver #{driver_num} ({constructor_name}) - posizione {position} (text: {position_text})")
+        print(f"Risultato: Driver #{driver_num} ({constructor_name}) - posizione {position} (text: {position_text})")
         constructor_id = CONSTRUCTOR_MAPPING.get(constructor_name, -1)
         if position_text == 'R':
             position_value = -10  # Ritiro
@@ -87,10 +85,10 @@ def calculate_team_score(drivers, constructors, race_results):
         total_score += driver_point_adj
 
         if driver_id == fast_lap_driver_id:
-            print(f"  🏁 Driver #{driver_id} has the fastest lap! +25 pts")
+            print(f"Driver #{driver_id} has the fastest lap! +25 pts")
             total_score += 25
             
-        print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
+        print(f"Driver ID {driver['id']}: posizione {position} = {points} pts")
 
     # Punteggi costruttori (esempio semplificato: +10 se il costruttore ha un driver in top 10)
     for constructor in constructors:    
@@ -98,7 +96,7 @@ def calculate_team_score(drivers, constructors, race_results):
             print(position_values)
             for position in position_values:
                 points = FantasyF1_POINTS.get(position, 0)
-                print(f"  🏁 Costruttore {constructor['name']} points {points} (position {position})")
+                print(f"Costruttore {constructor['name']} points {points} (position {position})")
                 total_score += points
 
     print(f"Punteggio totale team: {total_score} pts")
