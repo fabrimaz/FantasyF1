@@ -401,7 +401,7 @@ function renderSlots() {
   $('constr-count').textContent = selConstrs.length + '/2';
   const ok = selDrivers.length === 5 && selConstrs.length === 2;
   $('save-btn').disabled = !ok;
-  $('team-status').textContent = ok ? 'Team completo!' : 'Seleziona piloti e scuderie';
+  $('team-status').textContent = ok ? 'Your team is full' : 'Select drivers and constructors';
 }
 
 function updateBudget() {
@@ -415,14 +415,14 @@ function updateBudget() {
 }
 
 function toggleDriver(id) {
-  if (!teamCanEdit) { showToast('Team bloccato'); return; }
+  if (!teamCanEdit) { showToast('This team is locked'); return; }
   
   const d = DRIVERS.find(x => x.id === id);
   const idx = selDrivers.findIndex(x => x.id === id);
   if(idx >= 0) { selDrivers.splice(idx, 1); }
   else {
-    if(selDrivers.length >= 5) { showToast('Max 5 piloti'); return; }
-    if(calcRem() - d.price < 0) { showToast('Budget insufficiente!'); return; }
+    if(selDrivers.length >= 5) { showToast('Max 5 drivers'); return; }
+    if(calcRem() - d.price < 0) { showToast('Not enough budget'); return; }
     selDrivers.push(d);
   }
   // Render only the UI, don't reload from server
@@ -433,14 +433,14 @@ function toggleDriver(id) {
 }
 
 function toggleConstr(id) {
-  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  if (!teamCanEdit) { showToast('This team is locked'); return; }
   
   const c = CONSTRUCTORS.find(x => x.id === id);
   const idx = selConstrs.findIndex(x => x.id === id);
   if(idx >= 0) { selConstrs.splice(idx, 1); }
   else {
-    if(selConstrs.length >= 2) { showToast('Max 2 scuderie'); return; }
-    if(calcRem() - c.price < 0) { showToast('Budget insufficiente!'); return; }
+    if(selConstrs.length >= 2) { showToast('Max 2 constructors'); return; }
+    if(calcRem() - c.price < 0) { showToast('Not enough budget'); return; }
     selConstrs.push(c);
   }
   // Render only the UI, don't reload from server
@@ -451,8 +451,8 @@ function toggleConstr(id) {
 }
 
 function saveTeam() {
-  if (!selectedGP) { showToast('Seleziona un Grand Prix'); return; }
-  if (!teamCanEdit) { showToast('Team bloccato - qualifiche iniziate!'); return; }
+  if (!selectedGP) { showToast('Select a Grand Prix'); return; }
+  if (!teamCanEdit) { showToast('This team is locked'); return; }
   
   fetch(API_BASE + '/team/' + currentUser.id + '/' + selectedGP.id, {
     method: 'POST',
@@ -465,9 +465,9 @@ function saveTeam() {
   .then(r => r.json())
   .then(data => {
     if(data.error) { showToast(data.error); return; }
-    showToast('Team salvato per ' + selectedGP.name + '!', true);
+    showToast('Team saved for ' + selectedGP.name + '!', true);
   })
-  .catch(e => showToast('Errore: ' + e.message));
+  .catch(e => showToast('Error: ' + e.message));
 }
 
 function changeGP(gpId) {
