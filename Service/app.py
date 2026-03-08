@@ -77,7 +77,7 @@ def register():
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
 
-    if email.len() > 60 or username.len() > 30:
+    if len(email) > 50 or len(username) > 30:
         return jsonify({'error': 'Email or username should shorter'}), 400
     
     if not username or not email or not password:
