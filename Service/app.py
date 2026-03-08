@@ -54,7 +54,7 @@ with app.app_context():
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password', '')
     
     if not email or not password:

@@ -166,8 +166,8 @@ function doAuth() {
     ? {email, password: pw}
     : {username: $('inp-username').value.trim(), email, password: pw};
   
-  if(!email || !pw) { showErr('Compila tutti i campi'); return; }
-  if(authMode === 'register' && !payload.username) { showErr('Compila tutti i campi'); return; }
+  if(!email || !pw) { showErr('All fields are mandatory'); return; }
+  if(authMode === 'register' && !payload.username) { showErr('All fields are mandatory'); return; }
   
   fetch(API_BASE + endpoint, {
     method: 'POST',
@@ -484,7 +484,7 @@ function changeGP(gpId) {
 
 function joinLeague() {
   const code = $('inp-code').value.trim().toUpperCase();
-  if(!code) { showToast('Inserisci un codice lega'); return; }
+  if(!code) { showToast('Add a league code'); return; }
   
   fetch(API_BASE + '/leagues/join/' + currentUser.id + '/' + code, {
     method: 'POST',
