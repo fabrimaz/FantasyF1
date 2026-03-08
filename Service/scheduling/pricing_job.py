@@ -1,5 +1,5 @@
 from copyreg import constructor
-from datetime import datetime
+from datetime import datetime, timedelta
 from models import Constructor, Driver, GrandPrix, Team, DriverPrices, ConstructorPrices, TeamResult
 from .api_data_extraction import get_race
 from factory import db, create_app
@@ -18,8 +18,8 @@ def update_pricing(app, weekend_id):
         # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
         race_date_str = race_data.get('date')
         gp = GrandPrix.query.filter(
-            GrandPrix.date >= datetime.fromisoformat(race_date_str),
-            GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+            GrandPrix.date <= datetime.fromisoformat(race_date_str),
+            GrandPrix.date + timedelta(hours=106) >= datetime.fromisoformat(race_date_str)
         ).first()
 
         if weekend_id == 100:
