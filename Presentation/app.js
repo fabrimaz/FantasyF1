@@ -267,7 +267,7 @@ function logout() {
 // ────────────────────────────────────────────────────────────────────────
 
 function calcSpent() { 
-  return selDrivers.reduce((s,d) => s+d.price, 0) + selConstrs.reduce((s,c) => s+c.price, 0); 
+  return selDrivers.reduce((s,d) => s+d.current_price, 0) + selConstrs.reduce((s,c) => s+c.current_price, 0); 
 }
 
 function calcRem() { 
@@ -381,7 +381,7 @@ function renderSlots() {
       <div class="slot-type">P${i+1}</div>
       ${d ? `<div class="slot-bar" style="background:${d.color}"></div>
         <div class="slot-name">${d.name.split(' ').slice(-1)[0]}</div>
-        <div class="slot-price">$${d.price}M</div>` :
+        <div class="slot-price">$${d.current_price}M</div>` :
         `<div class="slot-name">Libero</div>`}
     </div>`;
   }).join('');
@@ -392,7 +392,7 @@ function renderSlots() {
       <div class="slot-type">S${i+1}</div>
       ${c ? `<div class="slot-bar" style="background:${c.color}"></div>
         <div class="slot-name">${c.name.split(' ')[0]}</div>
-        <div class="slot-price">$${c.price}M</div>` :
+        <div class="slot-price">$${c.current_price}M</div>` :
         `<div class="slot-name">Libero</div>`}
     </div>`;
   }).join('');
