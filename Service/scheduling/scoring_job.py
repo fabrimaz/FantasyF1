@@ -4,7 +4,7 @@ Calcola i punteggi dei team basandosi sui risultati ufficiali F1 (Ergast API)
 Schedulato per girare ogni domenica sera dopo il GP o chiamata da API
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from .api_data_extraction import get_race
 from models import Team, TeamResult, GrandPrix
 from factory import db, create_app
@@ -155,7 +155,7 @@ def run_scoring_job(app, weekend_id=None):
         race_date_str = race_data.get('date')
         gp = GrandPrix.query.filter(
             GrandPrix.date >= datetime.fromisoformat(race_date_str),
-            GrandPrix.date < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+            GrandPrix.date + timedelta(hours=106) < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
         ).first()
 
         if weekend_id == 100:
