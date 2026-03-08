@@ -56,13 +56,13 @@ def login():
     data = request.get_json()
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
-    
+
     if not email or not password:
-        return jsonify({'error': 'Email e password obbligatori'}), 400
+        return jsonify({'error': 'Email and password are mandatory'}), 400
     
     user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
-        return jsonify({'error': 'Credenziali non valide'}), 401
+        return jsonify({'error': 'Email and password are wrong'}), 401
     
     return jsonify({
         'success': True,
@@ -74,8 +74,11 @@ def login():
 def register():
     data = request.get_json()
     username = data.get('username', '').strip()
-    email = data.get('email', '').strip()
+    email = data.get('email', '').strip().lower()
     password = data.get('password', '')
+
+    if email.len() > 60 or username.len() > 30:
+        return jsonify({'error': 'Email or username should shorter'}), 400
     
     if not username or not email or not password:
         return jsonify({'error': 'All fields must be filled'}), 400
