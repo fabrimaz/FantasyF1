@@ -153,12 +153,14 @@ def run_scoring_job(app, weekend_id=None):
         # 2. Trova il GP corrispondente nel nostro DB
         # Ergast usa formato YYYY-MM-DD, il nostro DB ha datetime
         race_date_str = race_data.get('date')
+        print("Found race date:", race_date_str)
         gp = GrandPrix.query.filter(
             GrandPrix.date >= datetime.fromisoformat(race_date_str),
-            GrandPrix.date + timedelta(hours=106) < datetime.fromisoformat(race_date_str.replace('-', '') + 'T23:59:59')
+            GrandPrix.date + timedelta(hours=106) < datetime.fromisoformat(race_date_str)
         ).first()
 
         if weekend_id == 100:
+            print("Test process")
             gp = GrandPrix.query.filter_by(id=1).first() 
 
         if not gp:  # Se è un test, non serve trovare il GP
