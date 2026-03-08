@@ -54,7 +54,9 @@ def calculate_team_score(drivers, constructors, race_results):
     for result in race_results.get('Results', []):
         position = result.get('position')
         position_text = result.get('positionText')
-        driver_num = int(result['Driver']['permanentNumber'])
+        driver_num_1 = result['Driver']['permanentNumber']
+        print(driver_num_1, position, position_text)
+        driver_num = int(driver_num_1)
         is_driver_with_fatest_lap = result.get('FastestLap', {}).get('rank') == '1'
         constructor_name = result['Constructor']['constructorId']
         print(f"  🏁 Risultato: Driver #{driver_num} ({constructor_name}) - posizione {position} (text: {position_text})")
@@ -83,7 +85,7 @@ def calculate_team_score(drivers, constructors, race_results):
         total_score += driver_point_adj
 
         if driver_id == fast_lap_driver_id:
-            print(f"  🏁 Driver #{driver_id} has the fastest lap! +5 pts")
+            print(f"  🏁 Driver #{driver_id} has the fastest lap! +25 pts")
             total_score += 25
             
         print(f"  🏁 Driver ID {driver['id']}: posizione {position} = {points} pts")
