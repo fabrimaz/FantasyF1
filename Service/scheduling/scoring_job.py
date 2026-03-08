@@ -155,8 +155,8 @@ def run_scoring_job(app, weekend_id=None):
         race_date_str = race_data.get('date')
         print("Found race date:", race_date_str)
         gp = GrandPrix.query.filter(
-            GrandPrix.date >= datetime.fromisoformat(race_date_str),
-            GrandPrix.date + timedelta(hours=106) < datetime.fromisoformat(race_date_str)
+            GrandPrix.date <= datetime.fromisoformat(race_date_str),
+            GrandPrix.date + timedelta(hours=106) >= datetime.fromisoformat(race_date_str)
         ).first()
 
         if weekend_id == 100:
