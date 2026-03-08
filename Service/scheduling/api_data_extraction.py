@@ -30,3 +30,32 @@ def get_race(weekend_id=None):
     except Exception as e:
         print(f"❌ Errore nel caricamento da Ergast API: {e}")
         return None
+    
+# def get_quali(weekend_id=None):
+#     """Ottiene il risultato delle qualifiche gara più recente da Ergast API"""
+#     try:
+#         url = f'https://api.jolpi.ca/ergast/f1/current/{weekend_id}/qualifying.json' if weekend_id else 'https://api.jolpi.ca/ergast/f1/current/last/qualifying.json'
+
+#         if weekend_id == 100:
+#             #testing api
+#             url = f'https://api.jolpi.ca/ergast/f1/2025/11/qualifying.json'
+
+#         response = requests.get(url, timeout=10)
+#         data = response.json()
+#         #print(data)  # Debug: mostra la risposta completa
+        
+#         if 'MRData' not in data or 'RaceTable' not in data['MRData']:
+#             print("❌ Nessuna qualifica gara trovata su Ergast API")
+#             return None
+        
+#         races = data['MRData']['RaceTable']['Races']  # ????
+#         if not races:
+#             print("❌ Nessun risultato qualifica disponibile")
+#             return None
+        
+#         race = races[0]
+#         print(f"✅ Caricata gara: {race['raceName']} ({race['date']})")
+#         return race
+#     except Exception as e:
+#         print(f"❌ Errore nel caricamento da Ergast API: {e}")
+#         return None
