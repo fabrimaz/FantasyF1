@@ -61,7 +61,7 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
                 drivers_occurrence[driver_number] += 1
                 total_occurences += 1
 
-    driver_prices = DriverPrices.query.filter(gp_id=gp_id-1)
+    driver_prices = DriverPrices.query.filter_by(gp_id=gp_id-1)
     average_occurrence = total_occurences / len(drivers_occurrence) if len(drivers_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for driver in all_drivers:
@@ -93,7 +93,7 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
                 constructors_occurrence[constructor_id] += 1
                 total_occurences += 1
 
-    ctor_prices = ConstructorPrices.query.filter(gp_id=gp_id-1)
+    ctor_prices = ConstructorPrices.query.filter_by(gp_id=gp_id-1)
     average_occurrence = total_occurences / len(constructors_occurrence) if len(constructors_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for constructor in all_constructors:
