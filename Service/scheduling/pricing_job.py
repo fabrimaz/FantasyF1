@@ -61,15 +61,18 @@ def update_driver_prices(gp_id, teams_for_weekend, race_data):
                 drivers_occurrence[driver_number] += 1
                 total_occurences += 1
 
+    driver_prices = DriverPrices.query.filter(gp_id=gp_id-1)
     average_occurrence = total_occurences / len(drivers_occurrence) if len(drivers_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for driver in all_drivers:
+        previous_gp_entry = next((dp for dp in driver_prices if dp.driver_id == driver.number), None)
+        previous_gp_price = previous_gp_entry.price if previous_gp_entry else driver.price        
         perc_occurence = (drivers_occurrence[driver.number] - average_occurrence) / average_occurrence if average_occurrence > 0 else 0
-        adjusted_price = driver.price * (1 + learning_rate * perc_occurence)
+        adjusted_price = previous_gp_price * (1 + learning_rate * perc_occurence)
         print(adjusted_price)
-        new_price = 0.7 * driver.price + 0.3 * adjusted_price
+        new_price = 0.7 * previous_gp_price + 0.3 * adjusted_price
         drivers_new_prices[driver.number] = round(new_price, 1)
-        print(f"- {driver.name}, new price: {new_price}, old price: {driver.price}, occurrence: {drivers_occurrence[driver.number]}")
+        print(f"- {driver.name}, new price: {new_price}, old price: {previous_gp_price}, occurrence: {drivers_occurrence[driver.number]}")
 
     return drivers_new_prices
 
@@ -90,14 +93,17 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
                 constructors_occurrence[constructor_id] += 1
                 total_occurences += 1
 
+    ctor_prices = ConstructorPrices.query.filter(gp_id=gp_id-1)
     average_occurrence = total_occurences / len(constructors_occurrence) if len(constructors_occurrence) > 0 else 0
     print(f"Total occurrences: {total_occurences}, Average occurrence: {average_occurrence}")
     for constructor in all_constructors:
+        previous_gp_entry = next((c for c in ctor_prices if c.constructor_id == constructor.id), None)
+        previous_gp_price = previous_gp_entry.price if previous_gp_entry else constructor.price
         perc_occurence = (constructors_occurrence[constructor.id] - average_occurrence) / average_occurrence if average_occurrence > 0 else 0
-        adjusted_price = constructor.price * (1 + learning_rate * perc_occurence)
-        new_price = 0.7 * constructor.price + 0.3 * adjusted_price
+        adjusted_price = previous_gp_price * (1 + learning_rate * perc_occurence)
+        new_price = 0.7 * previous_gp_price + 0.3 * adjusted_price
         constructors_new_prices[constructor.id] = round(new_price, 1)
-        print(f"- {constructor.name}, new price: {new_price}, old price: {constructor.price}, occurrence: {constructors_occurrence[constructor.id]}")
+        print(f"- {constructor.name}, new price: {new_price}, old price: {previous_gp_price}, occurrence: {constructors_occurrence[constructor.id]}")
 
     return constructors_new_prices
 
