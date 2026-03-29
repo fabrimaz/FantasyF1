@@ -147,7 +147,7 @@ function switchMode(mode) {
   $('tab-register').className = 'login-tab' + (mode === 'register' ? ' active' : '');
   $('field-username').style.display = mode === 'register' ? 'flex' : 'none';
   $('login-error').style.display = 'none';
-  $('auth-btn').textContent = mode === 'login' ? '→ Entra in pista' : '→ Crea account';
+  $('auth-btn').textContent = mode === 'login' ? '→ To the Track' : '→ Create account';
 }
 
 function showErr(msg) { 
@@ -302,6 +302,7 @@ async function loadTeamForGP() {
     const resp = await fetch(API_BASE + `/team/${currentUser.id}/${selectedGP.id}`);
     const team = await resp.json();
     
+    // lock on a team level (if lock date is passed)
     console.log('Team data received:', team.drivers.length, team.constructors.length, 'can_edit:', team.can_edit);
     selDrivers = team.drivers || [];
     selConstrs = team.constructors || [];
@@ -326,7 +327,6 @@ function renderDriverGrid() {
       return d;
     })
     
-  drivers_by_gp.map(d => console.log(`Driver ${d.name} - price for GP ${selectedGP.id}: $${d.current_price}M`));
   $('drivers-grid').innerHTML = drivers_by_gp.map(d => {
     const isSelected = !!selDrivers.find(x => x.id === d.id);
     const toDeselect = !isSelected && (selDrivers.length >= 5 || calcRem() - d.price < 0);
@@ -517,7 +517,7 @@ function renderLeagues() {
   const l = LEAGUES_DB[leagueCode] || {name:leagueCode, members:0, round:'Round 14'};
 
   $('lb-name').textContent = l.name;
-  $('lb-members').textContent = l.members + ' manager';
+  $('lb-members').textContent = l.members + ' players';
 
   // GP Selector
   $('gp-selector-league').innerHTML = GRANDPRIXANDALL.map(gp => {
@@ -571,7 +571,7 @@ async function loadLeagueGPResults() {
 }
 
 function changeLeagueGP(gpId) {
-  const newGP = GRANDPRIX.find(gp => gp.id === parseInt(gpId));
+  const newGP = GRANDPRIXANDALL.find(gp => gp.id === parseInt(gpId));
   if (newGP) {
     selectedLeagueGP = newGP;
     loadLeagueGPResults();
@@ -619,8 +619,6 @@ async function showLeagueUserTeam(userId) {
           `).join('')}
         </div>
       </div>`;
-
-      console.log('League user team HTML:', html);
 
     // Rimuovi eventuale team già aperto
     const existing = document.getElementById('league-team-detail');
