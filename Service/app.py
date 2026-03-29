@@ -154,16 +154,17 @@ def send_login_email(to_email, username, code):
 @app.route('/api/grandprix', methods=['GET'])
 def get_grandprix():
     gps = GrandPrix.query.order_by(GrandPrix.round_num).all()
-    make_a_gp_always_current(gps)
-    return jsonify([gp.to_dict() for gp in gps]), 200
+    current_gp = find_always_current_gp(gps)
+    return jsonify([gp.to_dict(current_gp) for gp in gps]), 200
 
-def make_a_gp_always_current(gps):
+def find_always_current_gp(gps):
     """Funzione di utilità per forzare almeno un GP a essere sempre current"""
     currentGp = [gp for gp in gps if gp.get_status() == 'current']
     if not currentGp:
         first_future_gp = next((gp for gp in gps if gp.get_status() == 'future'), None)
         if first_future_gp:
-            first_future_gp.forced_status = 'current'        
+            return first_future_gp.id
+    return None    
 
 @app.route('/api/grandprix/<int:gp_id>', methods=['GET'])
 def get_gp_detail(gp_id):
@@ -177,22 +178,27 @@ def get_gp_detail(gp_id):
 @app.route('/api/team/<int:user_id>/<int:gp_id>', methods=['GET'])
 def get_team(user_id, gp_id):
     team = Team.query.filter_by(user_id=user_id, gp_id=gp_id).first()
+    
+    gps = GrandPrix.query.order_by(GrandPrix.round_num).all()
+    current_gp_id = find_always_current_gp(gps)
+    can_edit = True if current_gp_id == gp_id else gp.get_status() == 'current'
+    gp = next((gp for gp in gps if gp.id == gp_id), None)
+    if not gp:
+        return jsonify({'error': 'Grand Prix non trovato'}), 404
+
     if not team:
         # Return empty team if it doesn't exist yet
-        gp = GrandPrix.query.get(gp_id)
-
-        if not gp:
-            return jsonify({'error': 'Grand Prix non trovato'}), 404
+        
         return jsonify({
             'id': None,
             'gp_id': gp_id,
             'drivers': [],
             'constructors': [],
-            'can_edit': gp.get_status() == 'current',
+            'can_edit': can_edit,
             'created_at': None
         }), 200
     
-    return jsonify(team.to_dict()), 200
+    return jsonify(team.to_dict(can_edit=can_edit)), 200
 
 @app.route('/api/team/<int:user_id>/<int:gp_id>', methods=['POST'])
 def save_team(user_id, gp_id):
@@ -352,11 +358,11 @@ def get_gp_results(league_id, gp_id):
         d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
         output.append(d)
 
-    print(output)
+    sorted_rank = sorted(output, key=lambda x: x['points'], reverse=True)
     return jsonify({
         'league': league.to_dict(),
         'gp': gp.to_dict(),
-        'results': output
+        'results': sorted_rank
     }), 200
 
 #@app.route('/api/teamresult/<int:team_id>/<int:gp_id>', methods=['POST']) #NOT PUBLIC
