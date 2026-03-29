@@ -181,10 +181,10 @@ def get_team(user_id, gp_id):
     
     gps = GrandPrix.query.order_by(GrandPrix.round_num).all()
     current_gp_id = find_always_current_gp(gps)
-    can_edit = True if current_gp_id == gp_id else gp.get_status() == 'current'
     gp = next((gp for gp in gps if gp.id == gp_id), None)
     if not gp:
         return jsonify({'error': 'Grand Prix non trovato'}), 404
+    can_edit = True if current_gp_id == gp_id else gp.get_status() == 'current'
 
     if not team:
         # Return empty team if it doesn't exist yet
