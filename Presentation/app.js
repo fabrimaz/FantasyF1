@@ -507,7 +507,7 @@ function renderLeagues() {
   $('my-leagues-list').innerHTML = myLeagues.map(code => {
     const l = LEAGUES_DB[code] || {name:code, members:0};
     return `<div class="league-list-item${activeLeague === code ? ' active' : ''}" onclick="selectLeague('${code}')">
-      <div><div class="lli-name">${l.name}</div><div class="lli-sub">${l.members} partecipanti</div></div>
+      <div><div class="lli-name">${l.name}</div><div class="lli-sub">${l.members} players</div></div>
       <div class="lli-arrow">&#8250;</div>
     </div>`;
   }).join('');

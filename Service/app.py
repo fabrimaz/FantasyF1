@@ -310,6 +310,7 @@ def get_gp_results(league_id, gp_id):
     member_ids = [m.user_id for m in memberships]
 
     if gp_id == 50:
+        gp = GrandPrix(id=50, name='General Rank', round_num=50)
         # gets all results
         teamResults = TeamResult.query.filter(
             TeamResult.user_id.in_(member_ids)
