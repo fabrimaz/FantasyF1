@@ -349,15 +349,6 @@ def get_gp_results(league_id, gp_id):
         d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
         output.append(d)
 
-    remaining_members = set(member_ids) - set([tr.user_id for tr in teamResults])
-    for member_id in remaining_members:
-        d = dict()
-        d['user_id'] = member_id
-        d['points'] = 0
-        d['team'] = next((m.team_name for m in memberships if m.user_id == member_id), None)
-        d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
-        output.append(d)
-
     sorted_rank = sorted(output, key=lambda x: x['points'], reverse=True)
     return jsonify({
         'league': league.to_dict(),

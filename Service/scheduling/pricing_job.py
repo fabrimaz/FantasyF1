@@ -101,7 +101,7 @@ def update_constructor_prices(gp_id, teams_for_weekend, race_data):
         previous_gp_price = previous_gp_entry.price if previous_gp_entry else constructor.price
         perc_occurence = (constructors_occurrence[constructor.id] - average_occurrence) / average_occurrence if average_occurrence > 0 else 0
         adjusted_price = previous_gp_price * (1 + learning_rate * perc_occurence)
-        new_price = 0.7 * previous_gp_price + 0.3 * adjusted_price
+        new_price = 0.6 * previous_gp_price + 0.4 * adjusted_price
         constructors_new_prices[constructor.id] = round(new_price, 1)
         print(f"- {constructor.name}, new price: {new_price}, old price: {previous_gp_price}, occurrence: {constructors_occurrence[constructor.id]}")
 
