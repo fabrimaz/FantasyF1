@@ -338,7 +338,7 @@ def get_gp_results(league_id, gp_id):
     for member_id in member_ids:
         d = dict()
         d['user_id'] = member_id
-        d['points'] = sum((member_id.points for team in teamResults if team.user_id == member_id), 0)
+        d['points'] = sum((team.points for team in teamResults if team.user_id == member_id), 0)
         d['team'] = next((m.team_name for m in memberships if m.user_id == member_id), None)
         d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
         output.append(d)
