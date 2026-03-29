@@ -2,6 +2,8 @@
 // FANTASY F1 - CLIENT APP
 // ════════════════════════════════════════════════════════════════════════
 
+let ongoingMaintenance = false; // Set to true to show maintenance banner and disable interactions
+
 // ────────────────────────────────────────────────────────────────────────
 // DATA & CONSTANTS
 // ────────────────────────────────────────────────────────────────────────
@@ -36,11 +38,16 @@ const API_BASE = 'https://fantasyf1-sqrp.onrender.com/api'; // PROD
 // INITIALIZATION
 // ────────────────────────────────────────────────────────────────────────
 
-async function initApp() {
+async function initApp() {  
   try {
     fetch(API_BASE + '/health')
   } catch (e) {
     showToast('Cannot reach the server', false);
+  }
+
+  if (ongoingMaintenance) {
+    console.log('App is in maintenance mode - showing banner and disabling interactions');
+    $('top-banner').className = 'top-banner.visible';
   }
 
   const loadingTimer = setTimeout(() => {

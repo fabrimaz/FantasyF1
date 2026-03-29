@@ -71,6 +71,24 @@ main { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
 .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn-full { width: 100%; }
 
+.top-banner {
+  display: none; /* hidden by default */
+}
+
+.top-banner.visible {
+  display: block;
+}
+
+.top-banner-text {
+  background: #9f0000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+}
+
 .card { background: var(--dark2); border: 1px solid var(--border); border-radius: 8px; }
 
 /* ── FORMS ── */
