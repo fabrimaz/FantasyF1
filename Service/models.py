@@ -166,17 +166,17 @@ class Team(db.Model):
     def get_constructors(self):
         return json.loads(self.constructors_json)
     
-    def to_dict(self):
+    def to_dict(self, can_edit=None):
         # Team can be edited if we haven't reached the lock_date yet (using game date)
         setup = GameState.get_game_date()
         game_date = datetime.now() + timedelta(hours=setup.offset_hours)
-        can_edit = self.grand_prix.lock_date and self.grand_prix.lock_date > game_date
+        can_edit_value = self.grand_prix.lock_date and self.grand_prix.lock_date > game_date if None else can_edit
         return {
             'id': self.id,
             'gp_id': self.gp_id,
             'drivers': self.get_drivers(),
             'constructors': self.get_constructors(),
-            'can_edit': can_edit,
+            'can_edit': can_edit_value,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
