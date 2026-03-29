@@ -546,10 +546,10 @@ async function loadLeagueGPResults() {
     
     // Render results
     const results = resultsData.results || [];
-    $('lb-round').textContent = 'Gran Premio del ' + resultsData.gp.name;
+    $('lb-round').textContent = selectedLeagueGP.id == 50 ? 'General Rank' : 'Grand Prix of ' + resultsData.gp.name;
     
     if (results.length === 0) {
-      $('lb-body').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px">Nessun risultato ancora per questo GP</td></tr>';
+      $('lb-body').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px">No results yet for this GP</td></tr>';
       return;
     }
     
