@@ -302,14 +302,14 @@ def get_gp_results(league_id, gp_id):
         return jsonify({'error': 'Lega non trovata'}), 404
     
     gp = GrandPrix.query.get(gp_id)
-    if not gp:
+    if not gp and gp_id != 50:  # id 50 is special case for overall results
         return jsonify({'error': 'Grand Prix non trovato'}), 404
     
     # Get all members of the league
     memberships = LeagueMembership.query.filter_by(league_id=league_id).all()
     member_ids = [m.user_id for m in memberships]
 
-    if id == 50:
+    if gp_id == 50:
         # gets all results
         teamResults = TeamResult.query.filter(
             TeamResult.user_id.in_(member_ids)
