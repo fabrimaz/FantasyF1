@@ -52,7 +52,6 @@ class GrandPrix(db.Model):
     fp1_start = db.Column(db.DateTime, nullable=True)
     lock_date = db.Column(db.DateTime, nullable=True)
     teams = db.relationship('Team', backref='grand_prix', lazy=True, cascade='all, delete-orphan')
-    forced_status = None
     
     def to_dict(self):
         return {
@@ -63,7 +62,19 @@ class GrandPrix(db.Model):
             'circuit': self.circuit,
             'fp1_start': self.fp1_start.isoformat() if self.fp1_start else None,
             'lock_date': self.lock_date.isoformat() if self.lock_date else None,
-            'status': self.forced_status if self.forced_status else self.get_status() 
+            'status': self.get_status() 
+        }
+    
+    def to_dict(self, current_gp_id=None):
+        return {
+            'id': self.id,
+            'round': self.round_num,
+            'name': self.name,
+            'date': self.date.isoformat(),
+            'circuit': self.circuit,
+            'fp1_start': self.fp1_start.isoformat() if self.fp1_start else None,
+            'lock_date': self.lock_date.isoformat() if self.lock_date else None,
+            'status': "current" if self.id == current_gp_id else self.get_status()
         }
     
     def get_status(self):
