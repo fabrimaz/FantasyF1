@@ -171,6 +171,7 @@ def get_team(user_id, gp_id):
     if not team:
         # Return empty team if it doesn't exist yet
         gp = GrandPrix.query.get(gp_id)
+
         if not gp:
             return jsonify({'error': 'Grand Prix non trovato'}), 404
         return jsonify({
@@ -192,15 +193,15 @@ def save_team(user_id, gp_id):
     
     user = User.query.get(user_id)
     if not user:
-        return jsonify({'error': 'Utente non trovato'}), 404
+        return jsonify({'error': 'User not found'}), 404
     
     gp = GrandPrix.query.get(gp_id)
     if not gp:
-        return jsonify({'error': 'Grand Prix non trovato'}), 404
+        return jsonify({'error': 'Grand Prix not found'}), 404
     
     # Check if GP is past (read-only)
     if gp.get_status() == 'past':
-        return jsonify({'error': 'Non puoi modificare team per GP passati'}), 403
+        return jsonify({'error': 'You cannot modify teams for past GPs'}), 403
     
     # Check if team exists
     team = Team.query.filter_by(user_id=user_id, gp_id=gp_id).first()
