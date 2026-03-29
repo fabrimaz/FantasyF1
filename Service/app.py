@@ -154,7 +154,16 @@ def send_login_email(to_email, username, code):
 @app.route('/api/grandprix', methods=['GET'])
 def get_grandprix():
     gps = GrandPrix.query.order_by(GrandPrix.round_num).all()
+    make_a_gp_always_current(gps)
     return jsonify([gp.to_dict() for gp in gps]), 200
+
+def make_a_gp_always_current(gps):
+    """Funzione di utilità per forzare almeno un GP a essere sempre current"""
+    currentGp = [gp for gp in gps if gp.get_status() == 'current']
+    if not currentGp:
+        first_future_gp = next((gp for gp in gps if gp.get_status() == 'future'), None)
+        if first_future_gp:
+            first_future_gp.forced_status = 'current'        
 
 @app.route('/api/grandprix/<int:gp_id>', methods=['GET'])
 def get_gp_detail(gp_id):
@@ -326,14 +335,13 @@ def get_gp_results(league_id, gp_id):
 
 
     output = []
-    for tr in teamResults:
+    for member_id in member_ids:
         d = dict()
-        d['user_id'] = tr.user_id
-        d['points'] = sum((tr.points for team in teamResults if team.user_id == tr.user_id), 0)
-        d['team'] = next((m.team_name for m in memberships if m.user_id == tr.user_id), None)
-        d['team_id'] = Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=tr.user_id, gp_id=gp_id).first() else None
+        d['user_id'] = member_id
+        d['points'] = sum((member_id.points for team in teamResults if team.user_id == member_id), 0)
+        d['team'] = next((m.team_name for m in memberships if m.user_id == member_id), None)
+        d['team_id'] = Team.query.filter_by(user_id=member_id, gp_id=gp_id).first().id if Team.query.filter_by(user_id=member_id, gp_id=gp_id).first() else None
         output.append(d)
-    
 
     remaining_members = set(member_ids) - set([tr.user_id for tr in teamResults])
     for member_id in remaining_members:
